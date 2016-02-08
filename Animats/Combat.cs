@@ -6,47 +6,47 @@ public class Combat : MonoBehaviour {
     public float attackRange = 3;
     public float accuracy = 1;
     public float damage = 1;
+    AnimatAI AnimatStats;
 
     // PickFruit function
     // Takes a target
     // If valid consumable and the associated function yeilds true, return true
-    public bool Consume(Transform target) {
+    public int[] Consume(Transform target)
+    {
+        AnimatStats = GetComponent<AnimatAI>();
+        int[] reasourceGain;
 
         if (target.GetComponentInParent<PrimaryProducer>() == true)
         {
-            if (target.GetComponentInParent<PrimaryProducer>().SheadFruit() == true)
+            reasourceGain = target.GetComponentInParent<PrimaryProducer>().SheadFruit();
+            if (reasourceGain != null)
             {
-                return true;
+                return reasourceGain;
             }
         }
         if (target.GetComponent<Terrain>() == true)
         {
             Terrain targetTerrain = target.GetComponent<Terrain>();
-            if (targetTerrain.Drink() == true) {
-                return true;
+            if (targetTerrain.Drink() == true)
+            {
+                return new int[] { 10, 0 };
             }
-            if (targetTerrain.HasReasource() == true) {
+            if (targetTerrain.HasReasource() == true)
+            {
                 targetTerrain.Graze();
-                return true;
+                return new int[] { 0, 10 };
             }
         }
-
-        return false;
-        /*RaycastHit hit;
-        Debug.DrawRay(transform.position + Vector3.up * 0.5f, (target.position - transform.position).normalized * attackRange, Color.cyan);
-
-        if (Physics.Raycast(transform.position + Vector3.up * 0.5f, (target.position - transform.position).normalized, out hit, attackRange))
+        if (target.GetComponentInParent<AnimatEssence>() == true && AnimatStats != null)
         {
-            if (hit.collider.gameObject.GetComponent<PrimaryProducer>().SheadFruit() == true)
+
+            reasourceGain = target.GetComponentInParent<AnimatEssence>().Consume(AnimatStats.ReasourceDeficite());
+            if (reasourceGain != null)
             {
-                return true;
-            }
-            if (hit.collider.gameObject.GetComponent<Terrain>().Graze() == true)
-            {
-                return true;
+                return reasourceGain;
             }
         }
-        return false;*/
+        return null;
     }
 
     // Jab Function

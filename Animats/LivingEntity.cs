@@ -27,6 +27,8 @@ public class LivingEntity : MonoBehaviour, IDamageable {
         }
     }
 
+
+
     protected void Die(){
         dead = true;
         Transform Essenceholder = Instantiate(essenceBlock, transform.position, Random.rotation) as Transform;

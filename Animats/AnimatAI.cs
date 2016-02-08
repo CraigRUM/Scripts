@@ -39,7 +39,7 @@ public class AnimatAI : LivingEntity {
 
     //Action Variables
     float nextActionCheckTime = 0;
-    enum targetType { Mob, Terra, Flora, Water };
+    enum targetType { Mob, Essence,Terra, Flora, Water };
     targetType currentTargetType;
     bool hasTask = false;
 
@@ -225,14 +225,18 @@ public class AnimatAI : LivingEntity {
                 currentTargetList.Clear();
             }
 
-            if (currentState == State.Grazing) {
+            if (currentState == State.Grazing && target != null)
+            {
+                int[] rescourceGain;
                 switch (currentTargetType)
                 {
                     case targetType.Terra:
-                        if (animatCombat.Consume(target) == true)
+                        rescourceGain = animatCombat.Consume(target);
+                        if (rescourceGain != null)
                         {
                             skinDefalt.color = new Color(102, 51, 0);
-                            hunger = Mathf.Clamp(hunger + 5, 0, baseHunger);
+                            hunger = Mathf.Clamp(hunger + rescourceGain[1], 0, baseHunger);
+                            thirst = Mathf.Clamp(thirst + rescourceGain[0], 0, baseThirst);
                             Debug.Log("Grass concumsed : Hunger = " + hunger);
                             yield return new WaitForSeconds(.25f);
                             skinDefalt.color = defaltColor;
@@ -243,12 +247,30 @@ public class AnimatAI : LivingEntity {
                         }
                         break;
 
+                    case targetType.Essence:
+                        rescourceGain = animatCombat.Consume(target);
+                        if (rescourceGain != null)
+                        {
+                            skinDefalt.color = Color.green;
+                            hunger = Mathf.Clamp(hunger + rescourceGain[1], 0, baseHunger);
+                            thirst = Mathf.Clamp(thirst + rescourceGain[0], 0, baseThirst);
+                            Debug.Log("Essence consumed : Hunger = " + hunger + " Thirst = " + thirst);
+                            yield return new WaitForSeconds(.25f);
+                            skinDefalt.color = defaltColor;
+                        }
+                        else
+                        {
+                            clearPrioritys();
+                        }
+                        break;
+
                     case targetType.Flora:
-                        if (animatCombat.Consume(target) == true)
+                        rescourceGain = animatCombat.Consume(target);
+                        if (rescourceGain != null)
                         {
                             skinDefalt.color = Color.magenta;
-                            hunger = Mathf.Clamp(hunger + 10, 0, baseHunger);
-                            thirst = Mathf.Clamp(thirst + 2, 0, baseThirst);
+                            hunger = Mathf.Clamp(hunger + rescourceGain[1], 0, baseHunger);
+                            thirst = Mathf.Clamp(thirst + rescourceGain[0], 0, baseThirst);
                             Debug.Log("Fruit concumsed : Hunger = " + hunger);
                             yield return new WaitForSeconds(.25f);
                             skinDefalt.color = defaltColor;
@@ -260,9 +282,9 @@ public class AnimatAI : LivingEntity {
                         break;
 
                     case targetType.Water:
-                        if (animatCombat.Consume(target) == true)
+                        if (animatCombat.Consume(target) != null)
                         {
-                            thirst = Mathf.Clamp(thirst + 5, 0, baseThirst);
+                            thirst = Mathf.Clamp(thirst + animatCombat.Consume(target)[0], 0, baseThirst);
                             Debug.Log("Water concumsed - Thirst = " + thirst);
                             skinDefalt.color = Color.cyan;
                             yield return new WaitForSeconds(.25f);
@@ -357,6 +379,15 @@ public class AnimatAI : LivingEntity {
                 }
                 break;
 
+            case targetType.Essence:
+                if (Target.GetComponent<AnimatEssence>() == true)
+                {
+                    thisColissionRadius = GetComponent<CapsuleCollider>().radius;
+                    targetColissionRadius = target.GetComponent<CapsuleCollider>().radius;
+                    transform.TransformDirection((transform.position + target.position).normalized);
+                }
+                break;
+
             default:
                 Debug.Log("no valid target selected");
                 break;
@@ -370,8 +401,15 @@ public class AnimatAI : LivingEntity {
     //Clears Prioritys if the target being chased dies
     void OntargetDeath() {
         clearPrioritys();
+        priorityTarget = consumeTarget[3];
+        currentTargetType = targetType.Essence;
+        StartSearch();
+
     }
 
+    public int[] ReasourceDeficite() {
+        return new int[] { baseThirst - thirst,baseHunger - hunger };
+    }
 
     //Proforms a search of a location by rotating the animate and checking each direction for valid targets
     //if targets are found the chase function is activated
@@ -559,8 +597,13 @@ public class AnimatAI : LivingEntity {
                                 yield return null;
                             }
                         }
-                        else if (pathfinder.remainingDistance == 0 || nextActionCheckTime < 0)
+                        else if (pathfinder.remainingDistance == 0)
                         {
+                            StartSearch();
+                            yield return null;
+                        }
+
+                        if (nextActionCheckTime < 0) {
                             clearPrioritys();
                             yield return null;
                         }

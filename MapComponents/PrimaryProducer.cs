@@ -134,14 +134,20 @@ Consumable controls fruit
     }
 
 
-    public bool SheadFruit() {
+    public int[] SheadFruit() {
 
         if (fruitList.Count > 0) {
             DestroyImmediate(fruitList.Dequeue().gameObject);
-
-            return true;
+            if (isTree = true)
+            {
+                return new int[] { 6, 12 };
+            }
+            else {
+                return new int[] { 4, 10 };
+            }
+            
         } //else if (FruitNo == maxFruit) { Reinitilize terrain and destroy tree }
-        return false;
+        return null;
     }
 
     public bool HasFruit() {

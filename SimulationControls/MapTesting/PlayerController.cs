@@ -46,9 +46,6 @@ public class PlayerController : MonoBehaviour {
         if (target != null)
         {
             targetPrimP = target.GetComponent<PrimaryProducer>();
-            if (targetPrimP.SheadFruit() == true) {
-                StartCoroutine(ActionMove());
-            }
         }
 
     }

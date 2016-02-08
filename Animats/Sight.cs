@@ -89,7 +89,7 @@ public class Sight : MonoBehaviour {
 
     // Check That the collider is a valid target
     bool TagetValidityCheck(GameObject Target) {
-        if (Target.GetComponent<LivingEntity>() == true || (Target.GetComponentInParent<PrimaryProducer>() == true) || Target.GetComponent<Terrain>() == true)
+        if (Target.GetComponent<LivingEntity>() == true || (Target.GetComponentInParent<PrimaryProducer>() == true) || Target.GetComponent<Terrain>() == true || Target.GetComponent<AnimatEssence>() == true)
         {
             //Debug.Log("Target detected" + Target.name);
             return true;
