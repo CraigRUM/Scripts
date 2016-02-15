@@ -16,6 +16,15 @@ public class SunControls : MonoBehaviour {
         StartCoroutine(DayNightCycle());
     }
 
+    public void timesetDawn() {
+        TimeSet(State.Dawn);
+    }
+
+    public void Photosynthesize()
+    {
+        if (Photosynthesis != null) { Photosynthesis(); }
+    }
+
     void TimeSet(State TargetTime) {
         switch (TargetTime) {
             case State.Morning:

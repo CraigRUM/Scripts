@@ -13,11 +13,8 @@ public class MapGenerator : MonoBehaviour {
     public Transform tilePrefab;
     public Transform BedRockPrefab;
 
-    //Pre baked navigation
-    public Transform navmeshMask, navmeshFloor;
-    Vector3 currentTireHight;
-
     //Current map variables
+    Vector3 currentTireHight;
     Terrain currentTerrain;
     List<Coord> allTileCoords;
     Dictionary<Coord, Terrain> tileTable = new Dictionary<Coord, Terrain>();
