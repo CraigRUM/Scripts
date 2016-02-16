@@ -27,8 +27,8 @@ public class Sight : MonoBehaviour {
         Debug.DrawRay(transform.position + Vector3.up * heightMultiplyer, (transform.forward + groundDir) * SightDist, Color.blue);
         Debug.DrawRay(transform.position + Vector3.up * heightMultiplyer, (transform.forward + transform.right).normalized * SightDist, Color.green);
         Debug.DrawRay(transform.position + Vector3.up * heightMultiplyer, (transform.forward - transform.right).normalized * SightDist, Color.green);
-        Debug.DrawRay(transform.position + Vector3.up * heightMultiplyer, (transform.forward + (2 * transform.right)).normalized * (SightDist / 2), Color.green);
-        Debug.DrawRay(transform.position + Vector3.up * heightMultiplyer, (transform.forward - (2 * transform.right)).normalized * (SightDist / 2), Color.green);
+        Debug.DrawRay(transform.position + Vector3.up * heightMultiplyer, (transform.forward + (transform.right/2)).normalized * (SightDist / 2), Color.green);
+        Debug.DrawRay(transform.position + Vector3.up * heightMultiplyer, (transform.forward - (transform.right/2)).normalized * (SightDist / 2), Color.green);
 
         if (Physics.CapsuleCast(transform.position * heightMultiplyer, transform.position + Vector3.up * heightMultiplyer, 5f, transform.forward, out hit, SightDist))
         {
@@ -66,7 +66,7 @@ public class Sight : MonoBehaviour {
             }
         }
 
-        if (Physics.Raycast(transform.position + Vector3.up * heightMultiplyer, (transform.forward + (2 * transform.right)).normalized, out hit, SightDist / 2))
+        if (Physics.Raycast(transform.position + Vector3.up * heightMultiplyer, (transform.forward + (transform.right/2)).normalized, out hit, SightDist / 2))
         {
             if (TagetValidityCheck(hit.collider.gameObject) == true)
             {
@@ -75,7 +75,7 @@ public class Sight : MonoBehaviour {
             }
         }
 
-        if (Physics.Raycast(transform.position + Vector3.up * heightMultiplyer, (transform.forward - (2 * transform.right)).normalized, out hit, SightDist / 2))
+        if (Physics.Raycast(transform.position + Vector3.up * heightMultiplyer, (transform.forward - (transform.right/2)).normalized, out hit, SightDist / 2))
         {
             if (TagetValidityCheck(hit.collider.gameObject) == true)
             {
@@ -89,7 +89,7 @@ public class Sight : MonoBehaviour {
 
     // Check That the collider is a valid target
     bool TagetValidityCheck(GameObject Target) {
-        if (Target.GetComponent<LivingEntity>() == true || (Target.GetComponentInParent<PrimaryProducer>() == true) || Target.GetComponent<Terrain>() == true || Target.GetComponent<AnimatEssence>() == true)
+        if ((Target.GetComponent<LivingEntity>() == true && Target.GetComponent<AnimatAI>().dietType != AnimatAI.Diet.Carnivorous) || (Target.GetComponentInParent<PrimaryProducer>() == true) || Target.GetComponent<Terrain>() == true || Target.GetComponent<AnimatEssence>() == true)
         {
             //Debug.Log("Target detected" + Target.name);
             return true;

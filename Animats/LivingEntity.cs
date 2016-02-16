@@ -29,7 +29,7 @@ public class LivingEntity : MonoBehaviour, IDamageable {
 
 
 
-    protected void Die(){
+    protected virtual void Die(){
         dead = true;
         Transform Essenceholder = Instantiate(essenceBlock, transform.position, Random.rotation) as Transform;
         Essenceholder.GetComponent<AnimatEssence>().setReaourceAdundance((int)(startingHealth / 4), (int)(startingHealth - (startingHealth / 4)));

@@ -59,7 +59,9 @@ public class MainMenuUi : MonoBehaviour {
     }
 
     public void SetSeed(int Seed) {
-        seed = int.Parse(inputseed.text);
+        if (inputseed.text != null) {
+            seed = int.Parse(inputseed.text);
+        }
     }
     public void SetProducerPercent() {
         producerPercent = producers.value;

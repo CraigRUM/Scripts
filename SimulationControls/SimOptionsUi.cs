@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 using System.Collections;
 
 public class SimOptionsUi : MonoBehaviour {
@@ -51,10 +52,10 @@ public class SimOptionsUi : MonoBehaviour {
 
     public void RestartSim()
     {
-        Application.LoadLevel("AITestGround");
+        SceneManager.LoadScene("AITestGround");
     }
 
     public void QuitToMenu() {
-        Application.LoadLevel("PrototypeStartScreen");
+        SceneManager.LoadScene("PrototypeStartScreen");
     }
 }

@@ -17,7 +17,7 @@ public class SunControls : MonoBehaviour {
     }
 
     public void timesetDawn() {
-        TimeSet(State.Dawn);
+        TimeSet(State.Morning);
     }
 
     public void Photosynthesize()
@@ -37,29 +37,29 @@ public class SunControls : MonoBehaviour {
                 transform.rotation = Quaternion.Euler(90f, 0f, 0f);
                 nextState = State.Evening;
                 if (Photosynthesis != null) { Photosynthesis(); }
-                Debug.Log("Time Set Afternoon");
+                //Debug.Log("Time Set Afternoon");
                 break;
             case State.Evening:
                 transform.rotation = Quaternion.Euler(135f, 0f, 0f);
                 nextState = State.Dusk;
                 if (Photosynthesis != null) { Photosynthesis(); }
-                Debug.Log("Time Set Evening");
+                //Debug.Log("Time Set Evening");
                 break;
             case State.Dusk:
                 transform.rotation = Quaternion.Euler(179f, 0f, 0f);
                 nextState = State.Night;
-                Debug.Log("Time Set Dusk");
+                //Debug.Log("Time Set Dusk");
                 break;
             case State.Night:
                 transform.rotation = Quaternion.Euler(190f, 0f, 0f);
                 nextState = State.Dawn;
-                Debug.Log("Time Set Night");
+                //Debug.Log("Time Set Night");
                 break;
             default:
                 transform.rotation = Quaternion.Euler(5f, 0f, 0f);
                 nextState = State.Morning;
                 if (Photosynthesis != null) { Photosynthesis(); }
-                Debug.Log("Time Set Dawn");
+                //Debug.Log("Time Set Dawn");
                 break;
         }
     }

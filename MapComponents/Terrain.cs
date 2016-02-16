@@ -118,8 +118,11 @@ public class Terrain : MonoBehaviour {
         { 
             if (abundanceLevel == Abundance.Barron)
             {
+                sol.Photosynthesis -= UpdateAbundance;
+                sol.Photosynthesis += UpdateAbundance;
                 abundanceLevel++;
-                UpdateAbundance();
+                setSurfaceTexture();
+                Debug.Log("block fertilized");
             }
         }
     }

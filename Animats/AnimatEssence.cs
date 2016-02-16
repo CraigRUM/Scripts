@@ -11,7 +11,7 @@ public class AnimatEssence : MonoBehaviour {
     }
 
     public void Start() {
-        StartCoroutine("Decay");
+        StartCoroutine(Decay());
     }
 
     public int[] Consume(int[] RD){
@@ -80,12 +80,32 @@ public class AnimatEssence : MonoBehaviour {
         }
     }
 
-    IEnumerable Decay() {
-        while (hydration + satation != 0) {
-            hydration -= 5;
-            satation -= 5;
+    void Decomposition() {
+        Collider[] hitColliders;
+
+        int layerMaska = 1 << 25;
+
+        hitColliders = Physics.OverlapSphere(transform.position, 4, layerMaska);
+
+        foreach (Collider hitcol in hitColliders)
+        {
+            if (hitcol.gameObject.GetComponentInParent<Terrain>() != null && Random.Range(1,5) == 3)
+            {
+                hitcol.gameObject.GetComponentInParent<Terrain>().Fertilize();
+            }
+        }
+    }
+
+    IEnumerator Decay() {
+        int decayCount = 6;
+        while (hydration + satation != 0 && decayCount > 0) {
+            hydration -= (int)0.25f*hydration;
+            satation -= (int)0.25f * satation;
+            transform.localScale -= transform.localScale * 0.25f;
             DecaySound();
-            yield return new WaitForSeconds(1f);
+            Decomposition();
+            decayCount--;
+            yield return new WaitForSeconds(10f);
         }
         Destroy(this.gameObject);
     }

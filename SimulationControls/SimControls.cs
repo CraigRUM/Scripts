@@ -5,6 +5,7 @@ public class SimControls : MonoBehaviour {
 
     public static SimControls control;
     public Transform map;
+    bool GUIEnabled;
 
     public int Rad;
     public float ProPercent;
@@ -26,39 +27,42 @@ public class SimControls : MonoBehaviour {
 	}
 
     void OnGUI() {
+        if (GUIEnabled == true) {
 
-        if (GUI.Button(new Rect(50, 350, 100, 30), "Set time Dawn")) {
-            if (FindObjectOfType<SunControls>() == true) {
-                FindObjectOfType<SunControls>().timesetDawn();
+            if (GUI.Button(new Rect(50, 350, 100, 30), "Set time Morning")) {
+                if (FindObjectOfType<SunControls>() == true) {
+                    FindObjectOfType<SunControls>().timesetDawn();
+                }
             }
-        }
 
-        if (GUI.Button(new Rect(50, 300, 100, 30), "Photosynthesize"))
-        {
-            if (FindObjectOfType<SunControls>() == true)
+            if (GUI.Button(new Rect(50, 300, 100, 30), "Photosynthesize"))
             {
-                FindObjectOfType<SunControls>().Photosynthesize();
+                if (FindObjectOfType<SunControls>() == true)
+                {
+                    FindObjectOfType<SunControls>().Photosynthesize();
+                }
             }
-        }
 
-        if (GUI.Button(new Rect(150, 350, 100, 30), "Time shift x1"))
-        {
-            Time.timeScale = 1;
-        }
+            if (GUI.Button(new Rect(150, 350, 100, 30), "Time shift x1"))
+            {
+                Time.timeScale = 1;
+            }
 
-        if (GUI.Button(new Rect(250, 350, 100, 30), "Time shift x2"))
-        {
-            Time.timeScale = 2;
-        }
+            if (GUI.Button(new Rect(250, 350, 100, 30), "Time shift x2"))
+            {
+                Time.timeScale = 2;
+            }
 
-        if (GUI.Button(new Rect(350, 350, 100, 30), "Time shift x3"))
-        {
-            Time.timeScale = 3;
-        }
+            if (GUI.Button(new Rect(350, 350, 100, 30), "Time shift x3"))
+            {
+                Time.timeScale = 3;
+            }
 
-        if (GUI.Button(new Rect(450, 350, 100, 30), "Time shift x4"))
-        {
-            Time.timeScale = 4;
+            if (GUI.Button(new Rect(450, 350, 100, 30), "Time shift x4"))
+            {
+                Time.timeScale = 4;
+            }
+
         }
 
 
@@ -68,11 +72,22 @@ public class SimControls : MonoBehaviour {
     void OnLevelWasLoaded(int level)
     {
         if (level == 1)
+        {
+            GUIEnabled = true;
             MapSetup();
+        }
+        else if(level == 0)
+        {
+            GUIEnabled = false;
+        }
     }
 
     public void MapSetup()
     {
+        /*if (FindObjectOfType<MapGenerator>())
+        {
+            DestroyImmediate(FindObjectOfType<MapGenerator>().gameObject);
+        }*/
         Transform currentMap = Instantiate(map,Vector3.zero,Quaternion.identity) as Transform;
         currentMap.GetComponent<MapGenerator>().mapSetup(Rad, ProPercent, WaterPercent, spaDensity, Seed);
     }

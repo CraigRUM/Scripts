@@ -5,6 +5,7 @@ using System.Collections.Generic;
 [RequireComponent(typeof(Sight))]
 [RequireComponent(typeof(Combat))]
 [RequireComponent(typeof(Audition))]
+[RequireComponent(typeof(Olfaction))]
 [RequireComponent(typeof(NavMeshAgent))]
 public class AnimatAI : LivingEntity {
 
@@ -12,10 +13,13 @@ public class AnimatAI : LivingEntity {
     Sight animatSight;
     Combat animatCombat;
     Audition animatAudition;
+    Olfaction animatOlfaction;
 
     //State Variables
     enum State { Idle, Chasing, Seaking, Wondering, Grazing }
+    public enum Diet { Herbivorous, Omnivorous, Carnivorous}
     State currentState;
+    public Diet dietType = Diet.Herbivorous;
     public int baseThirst = 100;
     public int baseHunger = 100;
     int hunger, thirst;
@@ -30,7 +34,6 @@ public class AnimatAI : LivingEntity {
     Transform target;
     string priorityTarget;
     bool hasTarget;
-    public bool Carnivourous;
     string combatTarget = "Animat";
     string[] consumeTarget = { "Ground", "PrimaryProducer", "Water","AnimatEssence" };
     float attackDistanceThreshold = 3;
@@ -63,11 +66,13 @@ public class AnimatAI : LivingEntity {
         pathfinder = GetComponent<NavMeshAgent>();
         currentState = State.Idle;
         currentTargetList = new List<Transform>();
+        currentTargetType = targetType.Water;
 
         //Sense Components
         animatSight = GetComponent<Sight>();
         animatAudition = GetComponent<Audition>();
         animatCombat = GetComponent<Combat>();
+        animatOlfaction = GetComponent<Olfaction>();
 
         //Metabolism
         hunger = (int)(baseHunger/1.5);
@@ -127,66 +132,156 @@ public class AnimatAI : LivingEntity {
             {
                 Die();
             }
-            yield return new WaitForSeconds(20f);
+            yield return new WaitForSeconds(10f);
         }
     }
 
     // Looks at the Animate State, Vital Componnets and Possible targets and determins the action the animat takes
     IEnumerator DecisionBlock() {
+        bool targetPreferenceFound;
+        List<Transform> possibleTargets;
         while (dead != true) {
             switch (currentState) {
 
                 //Determines the next priority target
                 case State.Idle:
-                    if (thirst < baseThirst / 2)
-                    {
-                        priorityTarget = consumeTarget[2];
-                        currentTargetType = targetType.Water;
-                        StartSearch();
+                    possibleTargets = animatOlfaction.Sniff();
+                    targetPreferenceFound = false;
+                    switch (dietType) {
+                        case Diet.Herbivorous:
+                            if (thirst < baseThirst / 2)
+                            {
+                                priorityTarget = consumeTarget[2];
+                                currentTargetType = targetType.Water;
+                                StartSearch();
+                            }
+                            else if (hunger < baseHunger / 2)
+                            {
+                                priorityTarget = consumeTarget[0];
+                                currentTargetType = targetType.Terra;
+                                StartSearch();
+                            }
+                            else if (thirst < baseThirst / 1.2)
+                            {
+                                priorityTarget = consumeTarget[2];
+                                currentTargetType = targetType.Water;
+                                StartSearch();
+                            }
+                            else if (hunger < baseHunger / 1.2)
+                            {
+                                priorityTarget = consumeTarget[0];
+                                currentTargetType = targetType.Terra;
+                                StartSearch();
+                            }
+                            else if (hunger < baseHunger / 1.1f)
+                            {
+                                if (possibleTargets != null) {
+                                foreach (Transform posibleTarget in possibleTargets) {
+                                    if (posibleTarget.GetComponent<PrimaryProducer>() == true) {
+                                        priorityTarget = consumeTarget[1];
+                                        currentTargetType = targetType.Flora;
+                                        StartSearch();
+                                        targetPreferenceFound = true;
+                                        break;
+                                    }
+                                }
+                                }
+                                if (targetPreferenceFound != true) {
+                                    priorityTarget = consumeTarget[0];
+                                    currentTargetType = targetType.Terra;
+                                    StartSearch();
+                                }
+                                
+                            }
+                            break;
+                        case Diet.Carnivorous:
+                            if (thirst < baseThirst / 2)
+                            {
+                                priorityTarget = consumeTarget[2];
+                                currentTargetType = targetType.Water;
+                                StartSearch();
+                            }
+                            else {
+                                if (possibleTargets != null)
+                                {
+                                    foreach (Transform posibleTarget in possibleTargets)
+                                    {
+                                        if (posibleTarget.GetComponent<AnimatEssence>() == true)
+                                        {
+                                            Debug.Log("Essence in proximity");
+                                            priorityTarget = consumeTarget[3];
+                                            currentTargetType = targetType.Essence;
+                                            StartSearch();
+                                            targetPreferenceFound = true;
+                                            break;
+                                        }
+                                    }
+                                }
+                                if (targetPreferenceFound != true)
+                                {
+                                    priorityTarget = combatTarget;
+                                    currentTargetType = targetType.Mob;
+                                    StartSearch();
+                                }
+                            }
+                            break;
+                        case Diet.Omnivorous:
+                            if (thirst < baseThirst / 1.5)
+                            {
+                                priorityTarget = consumeTarget[2];
+                                currentTargetType = targetType.Water;
+                                StartSearch();
+                            }
+                            else if (hunger < baseHunger / 3)
+                            {
+                                priorityTarget = consumeTarget[0];
+                                currentTargetType = targetType.Terra;
+                                StartSearch();
+                            }
+                            else if (hunger < baseHunger / 1.2)
+                            {
+                                if (possibleTargets != null)
+                                {
+                                    foreach (Transform posibleTarget in possibleTargets)
+                                    {
+                                        if (posibleTarget.GetComponent<AnimatEssence>() == true)
+                                        {
+                                            priorityTarget = consumeTarget[3];
+                                            currentTargetType = targetType.Essence;
+                                            StartSearch();
+                                            targetPreferenceFound = true;
+                                            break;
+                                        }
+                                    }
+                                    if (targetPreferenceFound != true)
+                                        foreach (Transform posibleTarget in possibleTargets)
+                                        {
+                                            if (posibleTarget.GetComponent<AnimatEssence>() == true)
+                                            {
+                                                priorityTarget = consumeTarget[1];
+                                                currentTargetType = targetType.Flora;
+                                                StartSearch();
+                                                targetPreferenceFound = true;
+                                                break;
+                                            }
+                                        }
+                                }
+                                if (targetPreferenceFound != true)
+                                    priorityTarget = consumeTarget[0];
+                                    currentTargetType = targetType.Terra;
+                                    StartSearch();
+                                    break;
+                            }
+                            break;
                     }
-                    else if (hunger < baseHunger / 2)
-                    {
-                        priorityTarget = consumeTarget[0];
-                        currentTargetType = targetType.Terra;
-                        StartSearch();
-                    }
-                    else if (thirst < baseThirst / 1.2)
-                    {
-                        priorityTarget = consumeTarget[2];
-                        currentTargetType = targetType.Water;
-                        StartSearch();
-                    }
-                    else if (hunger < baseHunger / 1.2)
-                    {
-                        priorityTarget = consumeTarget[0];
-                        currentTargetType = targetType.Terra;
-                        StartSearch();
-                    }
-                    else if (hunger < baseHunger / 1.1f)
-                    {
-                        if (Carnivourous == true)
-                        {
-                            priorityTarget = combatTarget;
-                            currentTargetType = targetType.Mob;
-                            StartSearch();
-                        }
-                        else
-                        {
-                            priorityTarget = consumeTarget[1];
-                            currentTargetType = targetType.Flora;
-                            StartSearch();
-                        }
-                    }
+                    
                     break;
 
                 case State.Chasing:
-                    if (health < startingHealth / 4 && currentTargetType == targetType.Mob) {
-                        clearPrioritys();
-                    }
                     break;
 
                 case State.Seaking:
-                    if ((thirst == baseThirst && currentTargetType == targetType.Water) || (hunger == baseHunger && currentTargetType == targetType.Terra))
+                    if ((thirst == baseThirst && currentTargetType == targetType.Water) || (hunger == baseHunger && currentTargetType == targetType.Terra) || hunger == baseHunger && currentTargetType == targetType.Essence)
                     {
                         clearPrioritys();
                     }
@@ -218,8 +313,8 @@ public class AnimatAI : LivingEntity {
                     //Debug.Log(possibleTargets.tag);
                     if (possibleTargets.tag == priorityTarget)
                     {
-                         Chase(possibleTargets);
-                         break;
+                            Chase(possibleTargets);
+                            break;
                     }
                 }
                 currentTargetList.Clear();
@@ -237,7 +332,7 @@ public class AnimatAI : LivingEntity {
                             skinDefalt.color = new Color(102, 51, 0);
                             hunger = Mathf.Clamp(hunger + rescourceGain[1], 0, baseHunger);
                             thirst = Mathf.Clamp(thirst + rescourceGain[0], 0, baseThirst);
-                            Debug.Log("Grass concumsed : Hunger = " + hunger);
+                            //Debug.Log("Grass concumsed : Hunger = " + hunger);
                             yield return new WaitForSeconds(.25f);
                             skinDefalt.color = defaltColor;
                         }
@@ -254,7 +349,7 @@ public class AnimatAI : LivingEntity {
                             skinDefalt.color = Color.green;
                             hunger = Mathf.Clamp(hunger + rescourceGain[1], 0, baseHunger);
                             thirst = Mathf.Clamp(thirst + rescourceGain[0], 0, baseThirst);
-                            Debug.Log("Essence consumed : Hunger = " + hunger + " Thirst = " + thirst);
+                            Debug.Log(gameObject.name + "Essence consumed : Hunger = " + hunger + " Thirst = " + thirst);
                             yield return new WaitForSeconds(.25f);
                             skinDefalt.color = defaltColor;
                         }
@@ -271,7 +366,7 @@ public class AnimatAI : LivingEntity {
                             skinDefalt.color = Color.magenta;
                             hunger = Mathf.Clamp(hunger + rescourceGain[1], 0, baseHunger);
                             thirst = Mathf.Clamp(thirst + rescourceGain[0], 0, baseThirst);
-                            Debug.Log("Fruit concumsed : Hunger = " + hunger);
+                            //Debug.Log("Fruit concumsed : Hunger = " + hunger);
                             yield return new WaitForSeconds(.25f);
                             skinDefalt.color = defaltColor;
                         }
@@ -285,7 +380,7 @@ public class AnimatAI : LivingEntity {
                         if (animatCombat.Consume(target) != null)
                         {
                             thirst = Mathf.Clamp(thirst + animatCombat.Consume(target)[0], 0, baseThirst);
-                            Debug.Log("Water concumsed - Thirst = " + thirst);
+                            //Debug.Log("Water concumsed - Thirst = " + thirst);
                             skinDefalt.color = Color.cyan;
                             yield return new WaitForSeconds(.25f);
                             skinDefalt.color = defaltColor;
@@ -298,6 +393,7 @@ public class AnimatAI : LivingEntity {
 
                     default:
                         Debug.Log("no valid target selected");
+                        clearPrioritys();
                         break;
 
                 }
@@ -308,7 +404,7 @@ public class AnimatAI : LivingEntity {
                 float sqrDstToTarget = (target.position - transform.position).sqrMagnitude;
                 if (sqrDstToTarget < Mathf.Pow(attackDistanceThreshold / 2 + thisColissionRadius + targetColissionRadius, 2))
                 {
-                    Debug.Log("In range");
+                    //Debug.Log("In range");
                         if (animatCombat.Jab(target) == true)
                     {
                         skinDefalt.color = Color.red;
@@ -336,62 +432,69 @@ public class AnimatAI : LivingEntity {
     void Chase(Transform Target)
     {
 
-        Debug.Log("Chase commenced!");
+        //Debug.Log("Chase commenced!");
         target = Target;
         currentState = State.Chasing;
         hasTarget = true;
         pathfinder.enabled = true;
-
-        switch (currentTargetType)
+        if (target != null)
         {
-            case targetType.Mob:
-                LivingEntity targetEntity = target.GetComponent<LivingEntity>();
-                targetEntity.OnDeath += OntargetDeath;
-                thisColissionRadius = GetComponent<CapsuleCollider>().radius;
-                targetColissionRadius = target.GetComponent<CapsuleCollider>().radius;
-                transform.TransformDirection((transform.position + target.position).normalized);
-                break;
-
-            case targetType.Terra:
-                if (Target.GetComponent<Terrain>().HasReasource() == true)
-                {
-                    thisColissionRadius = GetComponent<CapsuleCollider>().radius;
-                    targetColissionRadius = Vector3.Distance(target.GetComponent<MeshCollider>().bounds.min, target.GetComponent<MeshCollider>().bounds.max);
-                    transform.TransformDirection((transform.position + target.position).normalized);
-                }
-                break;
-
-            case targetType.Water:
-                if (Target.GetComponent<Terrain>().isWater == true)
-                {
-                    thisColissionRadius = GetComponent<CapsuleCollider>().radius;
-                    targetColissionRadius = Vector3.Distance(target.GetComponent<MeshCollider>().bounds.min, target.GetComponent<MeshCollider>().bounds.max);
-                    transform.TransformDirection((transform.position + target.position).normalized);
-                }
-                break;
-
-            case targetType.Flora:
-                if (Target.GetComponent<PrimaryProducer>() == true)
-                {
+            switch (currentTargetType)
+            {
+                case targetType.Mob:
+                    LivingEntity targetEntity = target.GetComponent<LivingEntity>();
+                    targetEntity.OnDeath += OntargetDeath;
                     thisColissionRadius = GetComponent<CapsuleCollider>().radius;
                     targetColissionRadius = target.GetComponent<CapsuleCollider>().radius;
                     transform.TransformDirection((transform.position + target.position).normalized);
-                }
-                break;
+                    break;
 
-            case targetType.Essence:
-                if (Target.GetComponent<AnimatEssence>() == true)
-                {
-                    thisColissionRadius = GetComponent<CapsuleCollider>().radius;
-                    targetColissionRadius = target.GetComponent<CapsuleCollider>().radius;
-                    transform.TransformDirection((transform.position + target.position).normalized);
-                }
-                break;
+                case targetType.Terra:
+                    if (target != null)
+                        if (target.GetComponent<Terrain>().HasReasource() == true)
+                        {
+                        thisColissionRadius = GetComponent<CapsuleCollider>().radius;
+                        targetColissionRadius = Vector3.Distance(target.GetComponent<MeshCollider>().bounds.min, target.GetComponent<MeshCollider>().bounds.max);
+                        transform.TransformDirection((transform.position + target.position).normalized);
+                        }
+                        break;
 
-            default:
-                Debug.Log("no valid target selected");
-                break;
+                case targetType.Water:
+                    if (target.GetComponent<Terrain>().isWater == true)
+                    {
+                        thisColissionRadius = GetComponent<CapsuleCollider>().radius;
+                        targetColissionRadius = Vector3.Distance(target.GetComponent<MeshCollider>().bounds.min, target.GetComponent<MeshCollider>().bounds.max);
+                        transform.TransformDirection((transform.position + target.position).normalized);
+                    }
+                    break;
 
+                case targetType.Flora:
+                    if (target.GetComponent<PrimaryProducer>() == true)
+                    {
+                        thisColissionRadius = GetComponent<CapsuleCollider>().radius;
+                        targetColissionRadius = target.GetComponent<CapsuleCollider>().radius;
+                        transform.TransformDirection((transform.position + target.position).normalized);
+                    }
+                    break;
+
+                case targetType.Essence:
+                    if (target.GetComponent<AnimatEssence>() == true)
+                    {
+                        thisColissionRadius = GetComponent<CapsuleCollider>().radius;
+                        targetColissionRadius = target.GetComponent<CapsuleCollider>().radius;
+                        transform.TransformDirection((transform.position + target.position).normalized);
+                    }
+                    break;
+
+                    /* default:
+                         Debug.Log("no valid target selected");
+                         break;*/
+
+            }
+        }
+        else {
+            clearPrioritys();
+            return;
         }
 
         hasTask = true;
@@ -400,11 +503,22 @@ public class AnimatAI : LivingEntity {
 
     //Clears Prioritys if the target being chased dies
     void OntargetDeath() {
-        clearPrioritys();
-        priorityTarget = consumeTarget[3];
-        currentTargetType = targetType.Essence;
-        StartSearch();
+        if (dead != true)
+        {
+            Debug.Log(tag + "Killed a creature");
+            hasTask = false;
+            target = null;
+            hasTarget = false;
+            priorityTarget = consumeTarget[3];
+            currentTargetType = targetType.Essence;
+            StartSearch();
+        }
 
+    }
+
+    protected override void Die() {
+        StopAllCoroutines();
+        base.Die();
     }
 
     public int[] ReasourceDeficite() {
@@ -474,9 +588,10 @@ public class AnimatAI : LivingEntity {
                 {
                     FixLocation();
                 }
-                pathfinder.enabled = true;
-                StartCoroutine(UpdatePath());
-
+                if (dead != true) {
+                    pathfinder.enabled = true;
+                    StartCoroutine(UpdatePath());
+                }
             }
             
         }
@@ -498,7 +613,7 @@ public class AnimatAI : LivingEntity {
     {
         if (dirCount < 5)
         {
-            float dir = Random.Range(0f, 360f);
+            float dir = Random.Range(-97f, 97f);
             currentRotation = transform.rotation * Quaternion.Euler(0f, dir, 0f);
             transform.rotation = currentRotation;
 
@@ -518,9 +633,11 @@ public class AnimatAI : LivingEntity {
     //Sets up and comences a world space search with ray casting for valid targets 
     void StartSearch()
     {
-        currentState = State.Seaking;
-        hasTask = true;
-        StartCoroutine(LookAround());
+        if (dead != true) {
+            currentState = State.Seaking;
+            hasTask = true;
+            StartCoroutine(LookAround());
+        }
     }
 
 
@@ -533,7 +650,7 @@ public class AnimatAI : LivingEntity {
         float nextFootStepTime = 2f;
         nextActionCheckTime = 5f;
         bool PathSet = false;
-        while (hasTask != false)
+        while (hasTask != false && dead != true && pathfinder.enabled == true)
         {
             nextActionCheckTime -= 0.25f;
 
@@ -542,7 +659,7 @@ public class AnimatAI : LivingEntity {
 
                 //Sets destination near target
                 case State.Chasing:
-                    if (target != null && dead != true && pathfinder.enabled == true)
+                    if (target != null && dead != true && pathfinder.enabled == true && pathfinder.isOnNavMesh == true)
                     {
 
                         if (currentTargetType == targetType.Mob)
@@ -563,14 +680,14 @@ public class AnimatAI : LivingEntity {
                                 if (dead != true && targetPosition != null && pathfinder.enabled == true)
                                 {
                                     pathfinder.SetDestination(navHit.position);
-                                    Debug.Log("Destination set");
+                                    //Debug.Log("Destination set");
                                     PathSet = true;
                                 }
                             }
                         }
                         else if (pathfinder.remainingDistance == 0 )
                         {
-                            Debug.Log("Destination reached");
+                            //Debug.Log("Destination reached");
                             currentState = State.Grazing;
                         }
                         else if (nextActionCheckTime < 0){ clearPrioritys(); }
@@ -583,7 +700,7 @@ public class AnimatAI : LivingEntity {
 
                 //Sets destination wondering location
                 case State.Wondering:
-                    if (dead != true && pathfinder.enabled == true)
+                    if (dead != true && pathfinder.enabled == true && pathfinder.enabled == true && pathfinder.isOnNavMesh == true)
                     {
                         if (PathSet == false)
                         {
@@ -597,10 +714,11 @@ public class AnimatAI : LivingEntity {
                                 yield return null;
                             }
                         }
-                        else if (pathfinder.remainingDistance == 0)
+                        else if (dead != true && targetPosition != null && pathfinder.enabled == true)
                         {
-                            StartSearch();
-                            yield return null;
+                            if (pathfinder.remainingDistance == 0)
+                                StartSearch();
+                                yield return null;
                         }
 
                         if (nextActionCheckTime < 0) {
@@ -633,9 +751,11 @@ public class AnimatAI : LivingEntity {
             }
 
             //Visability Check
-            if (nextActionCheckTime < 0 && dead != true && target != null && currentState != State.Wondering && currentTargetType == targetType.Mob)
+            if (target == null) { clearPrioritys(); }
+
+            if (nextActionCheckTime < 0 && dead != true && target != null && currentTargetType == targetType.Mob)
             {
-                if (animatSight.VisabilitiyCheck(target.tag, target) == false)
+                if (animatSight.VisabilitiyCheck(target.tag, target) == false || target == null)
                 {
                     clearPrioritys();
                     yield return null;
@@ -649,6 +769,7 @@ public class AnimatAI : LivingEntity {
         hasTask = false;
         target = null;
         hasTarget = false;
+        currentTargetType = targetType.Water;
         currentState = State.Idle;
     }
 
