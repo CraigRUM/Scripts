@@ -52,10 +52,10 @@ public class SimOptionsUi : MonoBehaviour {
 
     public void RestartSim()
     {
-        SceneManager.LoadScene("AITestGround");
+        //SceneManager.LoadScene("AITestGround");
     }
 
     public void QuitToMenu() {
-        SceneManager.LoadScene("PrototypeStartScreen");
+        SceneManager.LoadScene("MenuScene");
     }
 }

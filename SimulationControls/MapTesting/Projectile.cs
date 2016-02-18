@@ -29,13 +29,14 @@ public class Projectile : MonoBehaviour {
         transform.Translate(Vector3.forward * moveDistance);
 	}
 
-    void CheckCollisions(float moveDistance) {
+    RaycastHit CheckCollisions(float moveDistance) {
         Ray ray = new Ray(transform.position, transform.forward);
         RaycastHit hit;
 
         if (Physics.Raycast(ray, out hit, moveDistance + skinWidth, collisionMask, QueryTriggerInteraction.Collide)) {
-            ObjectHit(hit);
+            return hit;
         }
+        return hit;
 
     }
 
@@ -52,7 +53,7 @@ public class Projectile : MonoBehaviour {
         IDamageable damageableObject = c.GetComponent<IDamageable>();
         if (damageableObject != null)
         {
-            damageableObject.TakeDamage(damage);
+            damageableObject.TakeHit(damage, CheckCollisions(0.5f));
         }
         //print(hit.collider.gameObject.name);
         GameObject.Destroy(gameObject);

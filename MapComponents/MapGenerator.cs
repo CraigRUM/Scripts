@@ -7,6 +7,7 @@ public class MapGenerator : MonoBehaviour {
     public Map map;
 
     //Genorator prefabs
+    public Transform dnaStrand;
     public Transform sol;
     public Transform maskApiture;
     public Transform worldLimit;
@@ -52,6 +53,13 @@ public class MapGenerator : MonoBehaviour {
         }
         Transform solHolder = Instantiate(sol, transform.position + Vector3.up * 5, Quaternion.Euler(Vector3.right * 20)) as Transform;
         solHolder.parent = transform;
+
+        if (transform.FindChild("StrandHolder(Clone)"))
+        {
+            DestroyImmediate(transform.FindChild("StrandHolder(Clone)").gameObject);
+        }
+        Transform holderStrand = Instantiate(dnaStrand, Vector3.zero, Quaternion.Euler(Vector3.zero)) as Transform;
+        holderStrand.parent = transform;
 
         //Building and positioning navmesh mask apiture for custom navigation size
         if (transform.FindChild("NavMeshApiture(Clone)"))
@@ -376,7 +384,7 @@ public class MapGenerator : MonoBehaviour {
         [Range(0, 1)]
         public float producerPercent, waterPercent;
 
-        [Range(1, 3)]
+        [Range (0, 3)]
         public int spawnerDensity;
 
         public int seed;

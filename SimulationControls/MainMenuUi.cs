@@ -50,7 +50,7 @@ public class MainMenuUi : MonoBehaviour {
             SimControls.control.WaterPercent = waterPercent;
             SimControls.control.spaDensity = spawnerDensity;
         }
-        Application.LoadLevel("AITestGround");
+        Application.LoadLevel("SimulationScene");
     }
 
     public void QuitToWindows()

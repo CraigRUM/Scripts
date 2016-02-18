@@ -9,12 +9,17 @@ public class Sight : MonoBehaviour {
     public float SightDist = 10;
     AnimatAI Decision;
 
-    void Awake () {
+    void Start () {
         Decision = GetComponent<AnimatAI>();
-        groundDir = new Vector3(0, -heightMultiplyer);
         heightMultiplyer = 0.25f;
+        groundDir = new Vector3(0, -heightMultiplyer);
     }
- 
+
+    public void SetStats(string SightGene)
+    {
+
+    }
+
     //Returns a list of all valid Taregets within range in the animats line of sight
     public List<Transform> veiw()
     {
@@ -25,10 +30,16 @@ public class Sight : MonoBehaviour {
         //Debug rays displays the path of the raycasts used in target detection
         Debug.DrawRay(transform.position + Vector3.up * heightMultiplyer, transform.forward * SightDist, Color.blue);
         Debug.DrawRay(transform.position + Vector3.up * heightMultiplyer, (transform.forward + groundDir) * SightDist, Color.blue);
+
         Debug.DrawRay(transform.position + Vector3.up * heightMultiplyer, (transform.forward + transform.right).normalized * SightDist, Color.green);
         Debug.DrawRay(transform.position + Vector3.up * heightMultiplyer, (transform.forward - transform.right).normalized * SightDist, Color.green);
-        Debug.DrawRay(transform.position + Vector3.up * heightMultiplyer, (transform.forward + (transform.right/2)).normalized * (SightDist / 2), Color.green);
-        Debug.DrawRay(transform.position + Vector3.up * heightMultiplyer, (transform.forward - (transform.right/2)).normalized * (SightDist / 2), Color.green);
+        Debug.DrawRay(transform.position + Vector3.up * heightMultiplyer, (transform.forward + (transform.right / 2)).normalized * (SightDist / 2), Color.green);
+        Debug.DrawRay(transform.position + Vector3.up * heightMultiplyer, (transform.forward - (transform.right / 2)).normalized * (SightDist / 2), Color.green);
+
+        Debug.DrawRay(transform.position + Vector3.up * heightMultiplyer, (transform.forward + transform.right + groundDir).normalized * SightDist, Color.yellow);
+        Debug.DrawRay(transform.position + Vector3.up * heightMultiplyer, (transform.forward - transform.right + groundDir).normalized * SightDist, Color.yellow);
+        Debug.DrawRay(transform.position + Vector3.up * heightMultiplyer, (transform.forward + (transform.right / 2) + groundDir).normalized * (SightDist / 2), Color.yellow);
+        Debug.DrawRay(transform.position + Vector3.up * heightMultiplyer, (transform.forward - (transform.right / 2) + groundDir).normalized * (SightDist / 2), Color.yellow);
 
         if (Physics.CapsuleCast(transform.position * heightMultiplyer, transform.position + Vector3.up * heightMultiplyer, 5f, transform.forward, out hit, SightDist))
         {
@@ -76,6 +87,42 @@ public class Sight : MonoBehaviour {
         }
 
         if (Physics.Raycast(transform.position + Vector3.up * heightMultiplyer, (transform.forward - (transform.right/2)).normalized, out hit, SightDist / 2))
+        {
+            if (TagetValidityCheck(hit.collider.gameObject) == true)
+            {
+                DetectedTargets.Add(hit.collider.gameObject.transform);
+                //Debug.Log("Target detected" + hit.collider.gameObject.name);
+            }
+        }
+
+        if (Physics.Raycast(transform.position + Vector3.up * heightMultiplyer, (transform.forward + transform.right + groundDir).normalized, out hit, SightDist))
+        {
+            if (TagetValidityCheck(hit.collider.gameObject) == true)
+            {
+                DetectedTargets.Add(hit.collider.gameObject.transform);
+                //Debug.Log("Target detected" + hit.collider.gameObject.name);
+            }
+        }
+
+        if (Physics.Raycast(transform.position + Vector3.up * heightMultiplyer, (transform.forward - transform.right + groundDir).normalized, out hit, SightDist))
+        {
+            if (TagetValidityCheck(hit.collider.gameObject) == true)
+            {
+                DetectedTargets.Add(hit.collider.gameObject.transform);
+                //Debug.Log("Target detected" + hit.collider.gameObject.name);
+            }
+        }
+
+        if (Physics.Raycast(transform.position + Vector3.up * heightMultiplyer, (transform.forward + (transform.right / 2) + groundDir).normalized, out hit, SightDist / 2))
+        {
+            if (TagetValidityCheck(hit.collider.gameObject) == true)
+            {
+                DetectedTargets.Add(hit.collider.gameObject.transform);
+                //Debug.Log("Target detected" + hit.collider.gameObject.name);
+            }
+        }
+
+        if (Physics.Raycast(transform.position + Vector3.up * heightMultiplyer, (transform.forward - (transform.right / 2) + groundDir).normalized, out hit, SightDist / 2))
         {
             if (TagetValidityCheck(hit.collider.gameObject) == true)
             {

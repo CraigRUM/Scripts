@@ -182,7 +182,7 @@ public class AnimatEntity : LivingEntity {
             if (percent <= .5f && !hasAppliedDamage)
             {
                 hasAppliedDamage = true;
-                targetEntity.TakeDamage(attackDamage);
+                //targetEntity.TakeDamage(attackDamage);
             }
 
             percent += Time.deltaTime * attacksSpeed;

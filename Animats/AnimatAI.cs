@@ -15,6 +15,16 @@ public class AnimatAI : LivingEntity {
     Audition animatAudition;
     Olfaction animatOlfaction;
 
+    //Atribute variables
+    string geneString;
+    int baseHydration, baseSatation, baseHealth, metabolicRate;
+    char DietType;
+    float acceleration, movmentSpeed;
+    float attackRange, attackAccuracy, attackDamage;
+    float sightRange;
+    int olfactionRange, olfactionAccuracy;
+    int hearingRange;
+
     //State Variables
     enum State { Idle, Chasing, Seaking, Wondering, Grazing }
     public enum Diet { Herbivorous, Omnivorous, Carnivorous}
@@ -23,6 +33,7 @@ public class AnimatAI : LivingEntity {
     public int baseThirst = 100;
     public int baseHunger = 100;
     int hunger, thirst;
+    int noOfTargetsConsumed;
 
     //Navigation Variables
     Quaternion currentRotation;
@@ -80,8 +91,15 @@ public class AnimatAI : LivingEntity {
         StartCoroutine(Metabolism());
 
         //Cognition
+        noOfTargetsConsumed = 0;
         StartCoroutine(DecisionBlock());
         StartCoroutine(ActionBlock());    
+
+    }
+
+    //Animat Gene setup
+    public void AtributeSetup(string GeneString) {
+        geneString = GeneString;
 
     }
 
@@ -93,25 +111,25 @@ public class AnimatAI : LivingEntity {
         while (dead != true) {
 
             // Resource to health conversion
-            if (thirst > baseThirst/2 && hunger > baseHunger/2 && health > startingHealth) {
+            if (thirst > baseThirst/3 && hunger > baseHunger/3 && health < startingHealth) {
 
-                health = Mathf.Clamp(health + 10, 0, startingHealth);
-                thirst = Mathf.Clamp(thirst - 2, 0, baseThirst);
-                hunger = Mathf.Clamp(hunger - 2, 0, baseHunger);
-                Debug.Log(gameObject.name + ": health = " + health);
+                health = Mathf.Clamp(health + health / 10, 0, startingHealth);
+                thirst = Mathf.Clamp(thirst - (int)(baseThirst / 20), 0, baseThirst);
+                hunger = Mathf.Clamp(hunger - (int)(baseHunger / 20), 0, baseHunger);
+                Debug.Log(gameObject.name + "Gained health: currentHealth = " + health);
 
             }
 
             // Thirst level
             if (thirst != 0)
             {
-                thirst = Mathf.Clamp(thirst - 5, 0, baseThirst);
+                thirst = Mathf.Clamp(thirst - (int)(baseThirst/10), 0, baseThirst);
                 //Debug.Log(gameObject.name + ": thrist = " + thirst);
             }
             else if (health != 0)
             {
-                health = Mathf.Clamp(health - 5, 0, startingHealth);
-                Debug.Log(gameObject.name + ": health = " + health);
+                health = Mathf.Clamp(health - (int)(startingHealth / 20), 0, startingHealth);
+                Debug.Log(gameObject.name + ": health = " + health + "due to Dehydration");
             }
             else {
                 Die();
@@ -120,13 +138,13 @@ public class AnimatAI : LivingEntity {
             // Hunger level
             if (hunger != 0)
             {
-                hunger = Mathf.Clamp(hunger - 5, 0, baseHunger);
+                hunger = Mathf.Clamp(hunger - (int)(baseHunger / 20), 0, baseHunger);
                 //Debug.Log(gameObject.name + ": hunger = " + hunger);
             }
             else if(health != 0)
             {
-                health = Mathf.Clamp(health - 5, 0, startingHealth);
-                Debug.Log(gameObject.name + ": health = " + health);
+                health = Mathf.Clamp(health - (int)(startingHealth / 20), 0, startingHealth);
+                Debug.Log(gameObject.name + ": health = " + health + "due to Stavation");
             }
             else
             {
@@ -145,6 +163,7 @@ public class AnimatAI : LivingEntity {
 
                 //Determines the next priority target
                 case State.Idle:
+                    if (noOfTargetsConsumed >= 4) { animatCombat.FertilizeSoil(); }
                     possibleTargets = animatOlfaction.Sniff();
                     targetPreferenceFound = false;
                     switch (dietType) {
@@ -307,6 +326,7 @@ public class AnimatAI : LivingEntity {
         while (dead != true)
         {
             if (currentState == State.Seaking || currentState == State.Wondering) {
+                currentTargetList.Clear();
                 SenceCheck();
                 foreach (Transform possibleTargets in currentTargetList)
                 {
@@ -317,7 +337,6 @@ public class AnimatAI : LivingEntity {
                             break;
                     }
                 }
-                currentTargetList.Clear();
             }
 
             if (currentState == State.Grazing && target != null)
@@ -437,7 +456,7 @@ public class AnimatAI : LivingEntity {
         currentState = State.Chasing;
         hasTarget = true;
         pathfinder.enabled = true;
-        if (target != null)
+        if (target != null && dead != true)
         {
             switch (currentTargetType)
             {
@@ -450,7 +469,6 @@ public class AnimatAI : LivingEntity {
                     break;
 
                 case targetType.Terra:
-                    if (target != null)
                         if (target.GetComponent<Terrain>().HasReasource() == true)
                         {
                         thisColissionRadius = GetComponent<CapsuleCollider>().radius;

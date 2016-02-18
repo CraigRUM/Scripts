@@ -11,12 +11,16 @@ public class Audition : MonoBehaviour {
     Queue<Transform> DetectedTargets;
 
     //Listener instanciation
-    void Awake () {
-        Vector3 vecOffSet = new Vector3(0, 0.5f, 0);
-        Ears = Instantiate(HearingColider, transform.position + vecOffSet, Quaternion.Euler(Vector3.right)) as Transform;
+    void Start() {
+        Ears = Instantiate(HearingColider, transform.position, Quaternion.Euler(Vector3.right)) as Transform;
         Ears.parent = transform;
         Ears.gameObject.layer = 28 + hearingQuality;
         DetectedTargets = new Queue<Transform>();
+    }
+
+    public void SetStats(string AuditionGene)
+    {
+
     }
 
     //Sets The hearing quality

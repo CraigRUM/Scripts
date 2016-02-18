@@ -49,6 +49,29 @@ public class Combat : MonoBehaviour {
         return null;
     }
 
+    public void SetStats(string CombatGene) {
+
+    }
+
+    public void FertilizeSoil()
+    {
+        Debug.Log("fertilization initiated");
+        Collider[] hitColliders;
+
+        int layerMaska = 1 << 25;
+
+        hitColliders = Physics.OverlapSphere(transform.position, 3, layerMaska);
+
+        foreach (Collider hitcol in hitColliders)
+        {
+            if (hitcol.gameObject.GetComponentInParent<Terrain>() != null && Random.Range(0, 1) == 1)
+            {
+                hitcol.gameObject.GetComponentInParent<Terrain>().Fertilize();
+                break;
+            }
+        }
+    }
+
     // Jab Function
     // Takes a target living entity
     // Draws ray cast between animat and the target with the devation inversly proportional to the accuracy rating
@@ -60,10 +83,10 @@ public class Combat : MonoBehaviour {
 
         if (Physics.Raycast(transform.position + Vector3.up * 0.5f, (target.position - transform.position).normalized, out hit, attackRange))
         {
-            if (hit.collider.gameObject.GetComponent<LivingEntity>() == true)
+            IDamageable damageableObject = hit.collider.GetComponent<IDamageable>();
+            if (damageableObject != null)
             {
-                
-                hit.collider.gameObject.GetComponent<LivingEntity>().TakeDamage(damage);
+                damageableObject.TakeHit(damage, hit);
                 return true;
             }
         }

@@ -496,7 +496,7 @@ Mobility coroutines
                     case targetType.Mob:
                         if (targetEntity != null)
                         {
-                            targetEntity.TakeDamage(damage);
+                            //targetEntity.TakeDamage(damage);
                         }
                         hasAppliedDamage = true;
                         target = null;
