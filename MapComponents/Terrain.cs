@@ -18,9 +18,6 @@ public class Terrain : MonoBehaviour {
 
     SunControls sol;
 
-    [Range(0, 2)]
-    int SpawnerType;
-
     [Range(0,2)]
     public int ProducerType;
 
@@ -67,17 +64,21 @@ public class Terrain : MonoBehaviour {
     Public Interactions
     ////////////////////
     */
-    public void AddNest(int nestType) {
+    public void AddNest(int nestType, string[] Genes) {
+        
         hasNest = true;
         switch (nestType) {
             case 1:
-                PlaceModel(0.5f,oSpawner,0);
+                for (int i = 0; i < Genes.Length; i++) { Genes[i] = Genes[i].Replace('!', 'o'); }
+                PlaceModel(0.5f,oSpawner, Genes);
                 break;
             case 2:
-                PlaceModel(0.5f, cSpawner, 0);
+                for (int i = 0; i < Genes.Length; i++) { Genes[i] = Genes[i].Replace('!', 'p'); }
+                PlaceModel(0.5f, cSpawner, Genes);
                 break;
             default:
-                PlaceModel(0.5f, hSpawner, 0);
+                for (int i = 0; i < Genes.Length; i++) { Genes[i] = Genes[i].Replace('!', 'h'); }
+                PlaceModel(0.5f, hSpawner, Genes);
                 break;
         }
     }
@@ -277,6 +278,15 @@ Internal block updaters
         Vector3 vecOffSet = new Vector3(0, yOffSet, 0);
         Transform updatedModel = Instantiate(modelType, transform.position + vecOffSet, Quaternion.Euler(Vector3.right * rotation)) as Transform;
         updatedModel.parent = transform;
+    }
+
+    void PlaceModel(float yOffSet, Transform modelType, string[] Genes)
+    {
+        Vector3 vecOffSet = new Vector3(0, yOffSet, 0);
+        Transform updatedModel = Instantiate(modelType, transform.position + vecOffSet, Quaternion.Euler(Vector3.zero)) as Transform;
+        updatedModel.parent = transform;
+        updatedModel.GetComponent<Spawner>().AnimatBaseDna = Genes;
+        updatedModel.gameObject.SetActive(true);
     }
 
     /*

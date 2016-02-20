@@ -15,23 +15,29 @@ public class AnimatAI : LivingEntity {
     Audition animatAudition;
     Olfaction animatOlfaction;
 
-    //Atribute variables
+    /*Atribute variables*/
+    //Constructor String
     string geneString;
+
+    //Vitality
     int baseHydration, baseSatation, baseHealth, metabolicRate;
-    char DietType;
+    char dietinfo;//can be h,o or p
+
+    //Mobility
     float acceleration, movmentSpeed;
-    float attackRange, attackAccuracy, attackDamage;
+
+    //Combat
+    float attackRange, attackAccuracy,attackDamage;
+
+    //Sence
     float sightRange;
-    int olfactionRange, olfactionAccuracy;
-    int hearingRange;
+    int olfactionRange, olfactionAccuracy, hearingRange;
 
     //State Variables
     enum State { Idle, Chasing, Seaking, Wondering, Grazing }
     public enum Diet { Herbivorous, Omnivorous, Carnivorous}
     State currentState;
     public Diet dietType = Diet.Herbivorous;
-    public int baseThirst = 100;
-    public int baseHunger = 100;
     int hunger, thirst;
     int noOfTargetsConsumed;
 
@@ -47,7 +53,7 @@ public class AnimatAI : LivingEntity {
     bool hasTarget;
     string combatTarget = "Animat";
     string[] consumeTarget = { "Ground", "PrimaryProducer", "Water","AnimatEssence" };
-    float attackDistanceThreshold = 3;
+    float attackDistanceThreshold;
     float thisColissionRadius;
     float targetColissionRadius;
 
@@ -68,6 +74,18 @@ public class AnimatAI : LivingEntity {
     {
         //start living entity base class
         base.Start();
+        startingHealth = baseHealth;
+        switch (dietinfo) {
+            case 'h':
+                dietType = Diet.Herbivorous;
+                break;
+            case 'o':
+                dietType = Diet.Omnivorous;
+                break;
+            case 'p':
+                dietType = Diet.Carnivorous;
+                break;
+        }
 
         //Action marker setup
         skinDefalt = GetComponent<Renderer>().material;
@@ -75,19 +93,34 @@ public class AnimatAI : LivingEntity {
 
         //navagation set up
         pathfinder = GetComponent<NavMeshAgent>();
+        pathfinder.acceleration = acceleration;
+        pathfinder.speed = movmentSpeed;
+
         currentState = State.Idle;
         currentTargetList = new List<Transform>();
         currentTargetType = targetType.Water;
 
-        //Sense Components
-        animatSight = GetComponent<Sight>();
-        animatAudition = GetComponent<Audition>();
+        //Combat set up
         animatCombat = GetComponent<Combat>();
+        attackDistanceThreshold = attackRange / 1.2f;
+        animatCombat.SetStats(attackRange, attackAccuracy, attackDamage);
+
+        //Sence Components set up
+        //sight
+        animatSight = GetComponent<Sight>();
+        animatSight.SetStats(sightRange);
+
+        //olfaction
         animatOlfaction = GetComponent<Olfaction>();
+        animatOlfaction.SetStats(olfactionRange, olfactionAccuracy);
+
+        //audition
+        animatAudition = GetComponent<Audition>();
+        animatAudition.SetStats(hearingRange);
 
         //Metabolism
-        hunger = (int)(baseHunger/1.5);
-        thirst = (int)(baseThirst/1.5);
+        hunger = (int)(baseSatation/1.5);
+        thirst = (int)(baseHydration/1.5);
         StartCoroutine(Metabolism());
 
         //Cognition
@@ -100,7 +133,68 @@ public class AnimatAI : LivingEntity {
     //Animat Gene setup
     public void AtributeSetup(string GeneString) {
         geneString = GeneString;
+        string[] chromosomes = GeneString.Split(',');
+        for (int i = 0; i < chromosomes.Length; i++) {
+            switch (i) {
+                case 0:
+                    baseHydration = int.Parse(chromosomes[i]) + 10;
+                    break;
 
+                case 1:
+                    baseSatation = int.Parse(chromosomes[i]) + 10;
+                    break;
+
+                case 2:
+                    string[] temp = chromosomes[i].Split(':');
+                    baseHealth = int.Parse(temp[0]) + int.Parse(temp[1]) + 10;
+                    break;
+
+                case 3:
+                    metabolicRate = int.Parse(chromosomes[i]) + 5;
+                    break;
+
+                case 4:
+                    dietinfo = chromosomes[i].ToCharArray()[0];
+                    break;
+
+                case 5:
+                    acceleration = int.Parse(chromosomes[i]) + 1;
+                    break;
+
+                case 6:
+                    movmentSpeed = int.Parse(chromosomes[i]) + 1;
+                    break;
+
+                case 7:
+                    attackRange = int.Parse(chromosomes[i]) + 1;
+                    break;
+
+                case 8:
+                    attackAccuracy = int.Parse(chromosomes[i]) + 1;
+                    break;
+
+                case 9:
+                    attackDamage = int.Parse(chromosomes[i]) + 10;
+                    break;
+
+                case 10:
+                    sightRange = Mathf.Clamp(int.Parse(chromosomes[i]) + 4, 4, 16);
+                    break;
+
+                case 11:
+                    olfactionRange = int.Parse(chromosomes[i]) + 4;
+                    break;
+
+                case 12:
+                    olfactionAccuracy = int.Parse(chromosomes[i] + 1);
+                    break;
+
+                case 13:
+                    hearingRange = int.Parse(chromosomes[i]);
+                    break;
+            }
+        }
+        gameObject.SetActive(true);
     }
 
     // Runs until the animat is dead
@@ -111,11 +205,11 @@ public class AnimatAI : LivingEntity {
         while (dead != true) {
 
             // Resource to health conversion
-            if (thirst > baseThirst/3 && hunger > baseHunger/3 && health < startingHealth) {
+            if (thirst > baseHydration/3 && hunger > baseSatation/3 && health < startingHealth) {
 
                 health = Mathf.Clamp(health + health / 10, 0, startingHealth);
-                thirst = Mathf.Clamp(thirst - (int)(baseThirst / 20), 0, baseThirst);
-                hunger = Mathf.Clamp(hunger - (int)(baseHunger / 20), 0, baseHunger);
+                thirst = Mathf.Clamp(thirst - (int)(baseHydration / 20), 0, baseHydration);
+                hunger = Mathf.Clamp(hunger - (int)(baseSatation / 20), 0, baseSatation);
                 Debug.Log(gameObject.name + "Gained health: currentHealth = " + health);
 
             }
@@ -123,7 +217,7 @@ public class AnimatAI : LivingEntity {
             // Thirst level
             if (thirst != 0)
             {
-                thirst = Mathf.Clamp(thirst - (int)(baseThirst/10), 0, baseThirst);
+                thirst = Mathf.Clamp(thirst - (int)(baseHydration/10), 0, baseHydration);
                 //Debug.Log(gameObject.name + ": thrist = " + thirst);
             }
             else if (health != 0)
@@ -138,7 +232,7 @@ public class AnimatAI : LivingEntity {
             // Hunger level
             if (hunger != 0)
             {
-                hunger = Mathf.Clamp(hunger - (int)(baseHunger / 20), 0, baseHunger);
+                hunger = Mathf.Clamp(hunger - (int)(baseSatation / 20), 0, baseSatation);
                 //Debug.Log(gameObject.name + ": hunger = " + hunger);
             }
             else if(health != 0)
@@ -150,7 +244,7 @@ public class AnimatAI : LivingEntity {
             {
                 Die();
             }
-            yield return new WaitForSeconds(10f);
+            yield return new WaitForSeconds(metabolicRate);
         }
     }
 
@@ -168,31 +262,31 @@ public class AnimatAI : LivingEntity {
                     targetPreferenceFound = false;
                     switch (dietType) {
                         case Diet.Herbivorous:
-                            if (thirst < baseThirst / 2)
+                            if (thirst < baseHydration / 2)
                             {
                                 priorityTarget = consumeTarget[2];
                                 currentTargetType = targetType.Water;
                                 StartSearch();
                             }
-                            else if (hunger < baseHunger / 2)
+                            else if (hunger < baseSatation / 2)
                             {
                                 priorityTarget = consumeTarget[0];
                                 currentTargetType = targetType.Terra;
                                 StartSearch();
                             }
-                            else if (thirst < baseThirst / 1.2)
+                            else if (thirst < baseHydration / 1.2)
                             {
                                 priorityTarget = consumeTarget[2];
                                 currentTargetType = targetType.Water;
                                 StartSearch();
                             }
-                            else if (hunger < baseHunger / 1.2)
+                            else if (hunger < baseSatation / 1.2)
                             {
                                 priorityTarget = consumeTarget[0];
                                 currentTargetType = targetType.Terra;
                                 StartSearch();
                             }
-                            else if (hunger < baseHunger / 1.1f)
+                            else if (hunger < baseSatation / 1.1f)
                             {
                                 if (possibleTargets != null) {
                                 foreach (Transform posibleTarget in possibleTargets) {
@@ -214,7 +308,7 @@ public class AnimatAI : LivingEntity {
                             }
                             break;
                         case Diet.Carnivorous:
-                            if (thirst < baseThirst / 2)
+                            if (thirst < baseHydration / 2)
                             {
                                 priorityTarget = consumeTarget[2];
                                 currentTargetType = targetType.Water;
@@ -245,19 +339,19 @@ public class AnimatAI : LivingEntity {
                             }
                             break;
                         case Diet.Omnivorous:
-                            if (thirst < baseThirst / 1.5)
+                            if (thirst < baseHydration / 1.5)
                             {
                                 priorityTarget = consumeTarget[2];
                                 currentTargetType = targetType.Water;
                                 StartSearch();
                             }
-                            else if (hunger < baseHunger / 3)
+                            else if (hunger < baseSatation / 3)
                             {
                                 priorityTarget = consumeTarget[0];
                                 currentTargetType = targetType.Terra;
                                 StartSearch();
                             }
-                            else if (hunger < baseHunger / 1.2)
+                            else if (hunger < baseSatation / 1.2)
                             {
                                 if (possibleTargets != null)
                                 {
@@ -300,14 +394,14 @@ public class AnimatAI : LivingEntity {
                     break;
 
                 case State.Seaking:
-                    if ((thirst == baseThirst && currentTargetType == targetType.Water) || (hunger == baseHunger && currentTargetType == targetType.Terra) || hunger == baseHunger && currentTargetType == targetType.Essence)
+                    if ((thirst == baseHydration && currentTargetType == targetType.Water) || (hunger == baseSatation && currentTargetType == targetType.Terra) || hunger == baseSatation && currentTargetType == targetType.Essence)
                     {
                         clearPrioritys();
                     }
                     break;
 
                 case State.Grazing:
-                    if ((thirst > baseThirst / 1.1 && currentTargetType == targetType.Water) || (hunger > baseHunger / 1.1 && currentTargetType == targetType.Terra))
+                    if ((thirst > baseHydration / 1.1 && currentTargetType == targetType.Water) || (hunger > baseSatation / 1.1 && currentTargetType == targetType.Terra))
                     {
                         clearPrioritys();
                     }
@@ -349,8 +443,8 @@ public class AnimatAI : LivingEntity {
                         if (rescourceGain != null)
                         {
                             skinDefalt.color = new Color(102, 51, 0);
-                            hunger = Mathf.Clamp(hunger + rescourceGain[1], 0, baseHunger);
-                            thirst = Mathf.Clamp(thirst + rescourceGain[0], 0, baseThirst);
+                            hunger = Mathf.Clamp(hunger + rescourceGain[1], 0, baseSatation);
+                            thirst = Mathf.Clamp(thirst + rescourceGain[0], 0, baseHydration);
                             //Debug.Log("Grass concumsed : Hunger = " + hunger);
                             yield return new WaitForSeconds(.25f);
                             skinDefalt.color = defaltColor;
@@ -366,8 +460,8 @@ public class AnimatAI : LivingEntity {
                         if (rescourceGain != null)
                         {
                             skinDefalt.color = Color.green;
-                            hunger = Mathf.Clamp(hunger + rescourceGain[1], 0, baseHunger);
-                            thirst = Mathf.Clamp(thirst + rescourceGain[0], 0, baseThirst);
+                            hunger = Mathf.Clamp(hunger + rescourceGain[1], 0, baseSatation);
+                            thirst = Mathf.Clamp(thirst + rescourceGain[0], 0, baseHydration);
                             Debug.Log(gameObject.name + "Essence consumed : Hunger = " + hunger + " Thirst = " + thirst);
                             yield return new WaitForSeconds(.25f);
                             skinDefalt.color = defaltColor;
@@ -383,8 +477,8 @@ public class AnimatAI : LivingEntity {
                         if (rescourceGain != null)
                         {
                             skinDefalt.color = Color.magenta;
-                            hunger = Mathf.Clamp(hunger + rescourceGain[1], 0, baseHunger);
-                            thirst = Mathf.Clamp(thirst + rescourceGain[0], 0, baseThirst);
+                            hunger = Mathf.Clamp(hunger + rescourceGain[1], 0, baseSatation);
+                            thirst = Mathf.Clamp(thirst + rescourceGain[0], 0, baseHydration);
                             //Debug.Log("Fruit concumsed : Hunger = " + hunger);
                             yield return new WaitForSeconds(.25f);
                             skinDefalt.color = defaltColor;
@@ -398,7 +492,7 @@ public class AnimatAI : LivingEntity {
                     case targetType.Water:
                         if (animatCombat.Consume(target) != null)
                         {
-                            thirst = Mathf.Clamp(thirst + animatCombat.Consume(target)[0], 0, baseThirst);
+                            thirst = Mathf.Clamp(thirst + animatCombat.Consume(target)[0], 0, baseHydration);
                             //Debug.Log("Water concumsed - Thirst = " + thirst);
                             skinDefalt.color = Color.cyan;
                             yield return new WaitForSeconds(.25f);
@@ -540,7 +634,7 @@ public class AnimatAI : LivingEntity {
     }
 
     public int[] ReasourceDeficite() {
-        return new int[] { baseThirst - thirst,baseHunger - hunger };
+        return new int[] { baseHydration - thirst,baseSatation - hunger };
     }
 
     //Proforms a search of a location by rotating the animate and checking each direction for valid targets

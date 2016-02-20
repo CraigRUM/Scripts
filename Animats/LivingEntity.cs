@@ -3,7 +3,7 @@ using System.Collections;
 
 public class LivingEntity : MonoBehaviour, IDamageable {
 
-    public float startingHealth = 100;
+    protected float startingHealth = 100;
     protected float health;
     protected bool dead;
     public Transform essenceBlock;

@@ -17,7 +17,7 @@ public class Audition : MonoBehaviour {
         Ears.gameObject.layer = 28 + hearingQuality;
         DetectedTargets = new Queue<Transform>();
     }
-
+        hearingQuality = Hquality;
     public void SetStats(string AuditionGene)
     {
 

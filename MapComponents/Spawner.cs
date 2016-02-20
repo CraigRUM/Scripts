@@ -1,35 +1,39 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class Spawner : MonoBehaviour {
 
     public Wave[] waves;
-    public LivingEntity animat;
+    public AnimatAI animat;
+    public List<AnimatAI> currentAnimats;
+    public string[] AnimatBaseDna;
 
     Wave currentWave;
     int currentWaveNumber;
 
-    int aliveNPCs;
+    int aliveNPCs = 0;
     int remaingNPCs;
     float nextSpawnTime;
 
-    void Start() {
-        NextWave();
-    }
+    void Start() { NextWave(); }
 
     void Update() {
         if (remaingNPCs > 0 && Time.time > nextSpawnTime) {
             remaingNPCs--;
             nextSpawnTime = Time.time + currentWave.timeBetwweenSpwans;
 
-            LivingEntity spawnedNPC = Instantiate(animat, transform.position + Vector3.up, Quaternion.identity) as LivingEntity;
+            AnimatAI spawnedNPC = Instantiate(animat, transform.position + new Vector3(Random.Range(1,10),1, Random.Range(1, 10)), Quaternion.identity) as AnimatAI;
+            spawnedNPC.AtributeSetup(AnimatBaseDna[aliveNPCs]);
             spawnedNPC.OnDeath += onNPCDeath;
+            currentAnimats.Add(spawnedNPC);
+            aliveNPCs++;
         }
     }
 
     void onNPCDeath() {
         aliveNPCs--;
-
+        currentAnimats.RemoveAll(item => item == null);
         if (aliveNPCs == 0) {
             NextWave();
         }
@@ -42,7 +46,6 @@ public class Spawner : MonoBehaviour {
         {
             currentWave = waves[currentWaveNumber - 1];
             remaingNPCs = currentWave.npcCount;
-            aliveNPCs = remaingNPCs;
         }
     }
 

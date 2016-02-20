@@ -6,7 +6,7 @@ public class Sight : MonoBehaviour {
 
     float heightMultiplyer;
     Vector3 groundDir;
-    public float SightDist = 10;
+    float SightDist;
     AnimatAI Decision;
 
     void Start () {
@@ -15,9 +15,9 @@ public class Sight : MonoBehaviour {
         groundDir = new Vector3(0, -heightMultiplyer);
     }
 
-    public void SetStats(string SightGene)
+    public void SetStats(float Srange)
     {
-
+        SightDist = Srange;
     }
 
     //Returns a list of all valid Taregets within range in the animats line of sight

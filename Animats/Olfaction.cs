@@ -7,9 +7,9 @@ public class Olfaction : MonoBehaviour {
 
     public Transform SmellColider;
     [Range(1,16)]
-    public int olfactionRange;
+    int olfactionRange;
     [Range(1, 16)]
-    public int olfactionAccuracy;
+    int olfactionAccuracy;
     List<Transform> outputTargets;
 
 
@@ -20,9 +20,10 @@ public class Olfaction : MonoBehaviour {
         Sent.gameObject.layer = 26;
     }
 
-    public void SetStats(string OlfactionGene)
+    public void SetStats(int Orange, int accuracy)
     {
-
+        olfactionRange = Orange;
+        olfactionAccuracy = accuracy;
     }
 
     public List<Transform> Sniff() {

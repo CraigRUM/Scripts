@@ -34,7 +34,11 @@ public class MapGenerator : MonoBehaviour {
     //map genoration procedure
     public void GenerateMap()
     {
-
+        Time.timeScale = 0;
+        //Gene string test
+        foreach (string thing in Utility.GenerateGeneString(map.seed, 5)) {
+            Debug.Log(thing);
+        }
         //Setting up generated map object
         currentTireHight = new Vector3(0, 0, 0);
         tileTable = new Dictionary<Coord, Terrain>();
@@ -169,15 +173,15 @@ public class MapGenerator : MonoBehaviour {
                 currentTile = tileTable[randomTileID];
                 if (i % 4 == 0)
                 {
-                    currentTile.AddNest(2);
+                    currentTile.AddNest(2, Utility.GenerateGeneString(map.seed, 8));
                 }
                 else if (i % 3 == 0)
                 {
-                    currentTile.AddNest(1);
+                    currentTile.AddNest(1, Utility.GenerateGeneString(map.seed, 13));
                 }
                 else
                 {
-                    currentTile.AddNest(0); 
+                    currentTile.AddNest(0, Utility.GenerateGeneString(map.seed, 10)); 
                 }
         }
 
@@ -221,6 +225,8 @@ public class MapGenerator : MonoBehaviour {
                 }
             }
         }
+
+        Time.timeScale = 1;
 
     }
 

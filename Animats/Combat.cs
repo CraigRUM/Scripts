@@ -3,9 +3,7 @@ using System.Collections;
 
 public class Combat : MonoBehaviour {
 
-    public float attackRange = 3;
-    public float accuracy = 1;
-    public float damage = 1;
+    float attackRange,accuracy,damage;
     AnimatAI AnimatStats;
 
     // PickFruit function
@@ -49,8 +47,10 @@ public class Combat : MonoBehaviour {
         return null;
     }
 
-    public void SetStats(string CombatGene) {
-
+    public void SetStats(float Arange,float Aacuracy,float Adamage) {
+        attackRange = Arange;
+        accuracy = Aacuracy;
+        damage = Adamage;
     }
 
     public void FertilizeSoil()
