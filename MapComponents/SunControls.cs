@@ -7,6 +7,7 @@ public class SunControls : MonoBehaviour {
 
     public event System.Action Photosynthesis;
     public float dayLength = 5;
+    public int dayCount = 1;
     enum State {Night, Dawn, Morning, Afternoon, Evening, Dusk};
     bool PassageOfTime;
     State nextState;
@@ -16,8 +17,18 @@ public class SunControls : MonoBehaviour {
         StartCoroutine(DayNightCycle());
     }
 
-    public void timesetDawn() {
-        TimeSet(State.Morning);
+    public void SetTime(char time) {
+        switch (time) {
+            case 'm':
+                TimeSet(State.Morning);
+                break;
+            case 'a':
+                TimeSet(State.Afternoon);
+                break;
+            case 'e':
+                TimeSet(State.Dusk);
+                break;
+        }
     }
 
     public void Photosynthesize()
@@ -53,6 +64,7 @@ public class SunControls : MonoBehaviour {
             case State.Night:
                 transform.rotation = Quaternion.Euler(190f, 0f, 0f);
                 nextState = State.Dawn;
+                dayCount++;
                 //Debug.Log("Time Set Night");
                 break;
             default:

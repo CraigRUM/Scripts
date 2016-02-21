@@ -123,7 +123,7 @@ public class Terrain : MonoBehaviour {
                 sol.Photosynthesis += UpdateAbundance;
                 abundanceLevel++;
                 setSurfaceTexture();
-                Debug.Log("block fertilized");
+                //Debug.Log("block fertilized");
             }
         }
     }

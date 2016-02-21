@@ -12,7 +12,7 @@ public class Spawner : MonoBehaviour {
     Wave currentWave;
     int currentWaveNumber;
 
-    int aliveNPCs = 0;
+    public int aliveNPCs = 0;
     int remaingNPCs;
     float nextSpawnTime;
 

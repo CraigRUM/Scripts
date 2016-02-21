@@ -186,7 +186,7 @@ public class AnimatAI : LivingEntity {
                     break;
 
                 case 12:
-                    olfactionAccuracy = int.Parse(chromosomes[i] + 1);
+                    olfactionAccuracy = int.Parse(chromosomes[i]) + 1;
                     break;
 
                 case 13:
@@ -196,6 +196,39 @@ public class AnimatAI : LivingEntity {
         }
         gameObject.SetActive(true);
     }
+
+    public string AnimatDataOut(){
+        /*string[] animatData = {
+            geneString,
+            baseHealth.ToString(), health.ToString(),
+            baseSatation.ToString(), hunger.ToString(),
+            baseHydration.ToString(), thirst.ToString(),
+            dietinfo.ToString(), priorityTarget,
+            acceleration.ToString(), movmentSpeed.ToString(),
+            attackRange.ToString(), attackAccuracy.ToString(), attackDamage.ToString(),
+            sightRange.ToString(), olfactionRange.ToString(), olfactionAccuracy.ToString(), hearingRange.ToString()
+        };*/
+
+        string DataString = string.Format(
+                    @"Animat Gene : {0}
+    Health : {2}/{1} | Satation : {4}/{3} | Hydradtion : {6}/{5}
+    type : {7} | Curently Priority : {8}
+Atributes :-
+   mobility - Acc - {9}  MS - {10}  
+   combat   - AR - {11} AA - {12}  AD - {13}
+   Senses   - SR - {14}  OR - {15}  OA - {16}  HR - {17}  
+                    ",
+                    geneString,
+            baseHealth.ToString(), health.ToString(),
+            baseSatation.ToString(), hunger.ToString(),
+            baseHydration.ToString(), thirst.ToString(),
+            dietinfo.ToString(), priorityTarget,
+            acceleration.ToString(), movmentSpeed.ToString(),
+            attackRange.ToString(), attackAccuracy.ToString(), attackDamage.ToString(),
+            sightRange.ToString(), olfactionRange.ToString(), olfactionAccuracy.ToString(), hearingRange.ToString());
+        return DataString;
+
+        }
 
     // Runs until the animat is dead
     // Animat uses reasources over time 
@@ -210,7 +243,7 @@ public class AnimatAI : LivingEntity {
                 health = Mathf.Clamp(health + health / 10, 0, startingHealth);
                 thirst = Mathf.Clamp(thirst - (int)(baseHydration / 20), 0, baseHydration);
                 hunger = Mathf.Clamp(hunger - (int)(baseSatation / 20), 0, baseSatation);
-                Debug.Log(gameObject.name + "Gained health: currentHealth = " + health);
+                //Debug.Log(gameObject.name + "Gained health: currentHealth = " + health);
 
             }
 
@@ -223,7 +256,7 @@ public class AnimatAI : LivingEntity {
             else if (health != 0)
             {
                 health = Mathf.Clamp(health - (int)(startingHealth / 20), 0, startingHealth);
-                Debug.Log(gameObject.name + ": health = " + health + "due to Dehydration");
+                //Debug.Log(gameObject.name + ": health = " + health + "due to Dehydration");
             }
             else {
                 Die();
@@ -238,7 +271,7 @@ public class AnimatAI : LivingEntity {
             else if(health != 0)
             {
                 health = Mathf.Clamp(health - (int)(startingHealth / 20), 0, startingHealth);
-                Debug.Log(gameObject.name + ": health = " + health + "due to Stavation");
+                //Debug.Log(gameObject.name + ": health = " + health + "due to Stavation");
             }
             else
             {
@@ -321,7 +354,7 @@ public class AnimatAI : LivingEntity {
                                     {
                                         if (posibleTarget.GetComponent<AnimatEssence>() == true)
                                         {
-                                            Debug.Log("Essence in proximity");
+                                            //Debug.Log("Essence in proximity");
                                             priorityTarget = consumeTarget[3];
                                             currentTargetType = targetType.Essence;
                                             StartSearch();
@@ -339,7 +372,7 @@ public class AnimatAI : LivingEntity {
                             }
                             break;
                         case Diet.Omnivorous:
-                            if (thirst < baseHydration / 1.5)
+                            if (thirst < baseHydration / 2)
                             {
                                 priorityTarget = consumeTarget[2];
                                 currentTargetType = targetType.Water;
@@ -351,7 +384,7 @@ public class AnimatAI : LivingEntity {
                                 currentTargetType = targetType.Terra;
                                 StartSearch();
                             }
-                            else if (hunger < baseSatation / 1.2)
+                            else if (hunger < baseSatation / 1.1)
                             {
                                 if (possibleTargets != null)
                                 {
@@ -367,9 +400,10 @@ public class AnimatAI : LivingEntity {
                                         }
                                     }
                                     if (targetPreferenceFound != true)
+                                    {
                                         foreach (Transform posibleTarget in possibleTargets)
                                         {
-                                            if (posibleTarget.GetComponent<AnimatEssence>() == true)
+                                            if (posibleTarget.GetComponent<PrimaryProducer>() == true)
                                             {
                                                 priorityTarget = consumeTarget[1];
                                                 currentTargetType = targetType.Flora;
@@ -378,12 +412,8 @@ public class AnimatAI : LivingEntity {
                                                 break;
                                             }
                                         }
+                                    }
                                 }
-                                if (targetPreferenceFound != true)
-                                    priorityTarget = consumeTarget[0];
-                                    currentTargetType = targetType.Terra;
-                                    StartSearch();
-                                    break;
                             }
                             break;
                     }
@@ -505,7 +535,7 @@ public class AnimatAI : LivingEntity {
                         break;
 
                     default:
-                        Debug.Log("no valid target selected");
+                        //Debug.Log("no valid target selected");
                         clearPrioritys();
                         break;
 
@@ -521,7 +551,7 @@ public class AnimatAI : LivingEntity {
                         if (animatCombat.Jab(target) == true)
                     {
                         skinDefalt.color = Color.red;
-                        Debug.Log("Target Hit");
+                        //Debug.Log("Target Hit");
                         yield return new WaitForSeconds(.75f);
                         skinDefalt.color = defaltColor;
                     }
@@ -563,12 +593,14 @@ public class AnimatAI : LivingEntity {
                     break;
 
                 case targetType.Terra:
+                    if (target != null && dead != true) {
                         if (target.GetComponent<Terrain>().HasReasource() == true)
                         {
-                        thisColissionRadius = GetComponent<CapsuleCollider>().radius;
-                        targetColissionRadius = Vector3.Distance(target.GetComponent<MeshCollider>().bounds.min, target.GetComponent<MeshCollider>().bounds.max);
-                        transform.TransformDirection((transform.position + target.position).normalized);
+                            thisColissionRadius = GetComponent<CapsuleCollider>().radius;
+                            targetColissionRadius = Vector3.Distance(target.GetComponent<MeshCollider>().bounds.min, target.GetComponent<MeshCollider>().bounds.max);
+                            transform.TransformDirection((transform.position + target.position).normalized);
                         }
+                    }
                         break;
 
                 case targetType.Water:
@@ -617,7 +649,7 @@ public class AnimatAI : LivingEntity {
     void OntargetDeath() {
         if (dead != true)
         {
-            Debug.Log(tag + "Killed a creature");
+            //Debug.Log(tag + "Killed a creature");
             hasTask = false;
             target = null;
             hasTarget = false;

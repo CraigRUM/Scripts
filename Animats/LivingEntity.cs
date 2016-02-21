@@ -33,7 +33,7 @@ public class LivingEntity : MonoBehaviour, IDamageable {
         if (OnDeath != null) {
             OnDeath();
         }
-        Debug.Log(transform.gameObject.ToString() + " Has Died");
+        //Debug.Log(transform.gameObject.ToString() + " Has Died");
         GameObject.Destroy(gameObject);
     }
 }

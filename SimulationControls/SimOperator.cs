@@ -21,14 +21,33 @@ public class SimOperator : MonoBehaviour {
     float verticalLookRotation;
     float horizontalLookRotation;
 
+    public GameObject animatDisplay;
+    Mesh animatMesh;
+    Material animatMaterial;
+
     OperationsControler controller;
+
+    public AnimatAI CurrentlySelected(){
+        if (targetMob != null) {
+            return targetMob.GetComponent<AnimatAI>();
+        }
+        return null;
+    }
 
     void Start () {
         controller = GetComponent<OperationsControler>();
         viewCamera = Camera.main.transform;
         Camera.main.orthographicSize = veiwheight;
+        animatMaterial = animatDisplay.GetComponent<Material>();
+        animatMesh = animatDisplay.GetComponent<Mesh>();
     }
-	
+
+    void onfllowingDeath() {
+        animatDisplay.SetActive(true);
+        locked = false;
+
+    }
+
 	// Update is called once per frame
 	void Update () {
 
@@ -82,7 +101,14 @@ public class SimOperator : MonoBehaviour {
                 if (lookHit.collider.gameObject.GetComponent<LivingEntity>() == true)
                 {
                     locked = true;
+
                     targetMob = lookHit.collider.gameObject.transform;
+
+                    animatDisplay.SetActive(true);
+                    animatDisplay.transform.localScale = targetMob.transform.localScale;
+                    animatDisplay.GetComponent<Renderer>().material = targetMob.gameObject.GetComponent<Renderer>().material;
+                    targetMob.GetComponent<LivingEntity>().OnDeath += onfllowingDeath;
+
                     transform.position = new Vector3(targetMob.position.x, transform.position.y, targetMob.position.z);
                     viewCamera.localEulerAngles = new Vector3(90, viewCamera.localEulerAngles.y, viewCamera.localEulerAngles.z);
                     transform.Rotate(Vector3.up);

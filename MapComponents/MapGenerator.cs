@@ -20,6 +20,7 @@ public class MapGenerator : MonoBehaviour {
     List<Coord> allTileCoords;
     Dictionary<Coord, Terrain> tileTable = new Dictionary<Coord, Terrain>();
     Queue<Coord> shuffleTileCoords;
+    List<Spawner> SpawnerList;
 
     public void mapSetup(int Rad, float ProPercent, float WaterPercent,int spaDensity, int Seed) {
         map.mapRadius = Rad;
@@ -36,9 +37,9 @@ public class MapGenerator : MonoBehaviour {
     {
         Time.timeScale = 0;
         //Gene string test
-        foreach (string thing in Utility.GenerateGeneString(map.seed, 5)) {
+        /*foreach (string thing in Utility.GenerateGeneString(map.seed, 5)) {
             Debug.Log(thing);
-        }
+        }*/
         //Setting up generated map object
         currentTireHight = new Vector3(0, 0, 0);
         tileTable = new Dictionary<Coord, Terrain>();
@@ -166,6 +167,7 @@ public class MapGenerator : MonoBehaviour {
         }
 
         // Randomly placing Spawners base on map spawner density
+        SpawnerList = new List<Spawner>();
         int spawnerCount = map.spawnerDensity * 4;
         for (int i = 0; i < spawnerCount; i++)
         {
@@ -174,15 +176,18 @@ public class MapGenerator : MonoBehaviour {
                 if (i % 4 == 0)
                 {
                     currentTile.AddNest(2, Utility.GenerateGeneString(map.seed, 8));
+                    SpawnerList.Add(currentTile.GetComponentInChildren<Spawner>());
                 }
                 else if (i % 3 == 0)
                 {
                     currentTile.AddNest(1, Utility.GenerateGeneString(map.seed, 13));
-                }
+                    SpawnerList.Add(currentTile.GetComponentInChildren<Spawner>());
+            }
                 else
                 {
-                    currentTile.AddNest(0, Utility.GenerateGeneString(map.seed, 10)); 
-                }
+                    currentTile.AddNest(0, Utility.GenerateGeneString(map.seed, 10));
+                    SpawnerList.Add(currentTile.GetComponentInChildren<Spawner>());
+            }
         }
 
 
@@ -228,6 +233,14 @@ public class MapGenerator : MonoBehaviour {
 
         Time.timeScale = 1;
 
+    }
+
+    public int AnimatCount() {
+        int animatCount = 0;
+        foreach (Spawner nest in SpawnerList) {
+            animatCount += nest.aliveNPCs;
+        }
+        return animatCount;
     }
 
     //Terrain setup functions
