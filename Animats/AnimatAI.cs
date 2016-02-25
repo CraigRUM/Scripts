@@ -7,7 +7,7 @@ using System.Collections.Generic;
 [RequireComponent(typeof(Audition))]
 [RequireComponent(typeof(Olfaction))]
 [RequireComponent(typeof(NavMeshAgent))]
-public class AnimatAI : LivingEntity {
+public class AnimatAI : LivingEntity , IInspectable {
 
     //Animats Input and Output
     Sight animatSight;
@@ -34,7 +34,7 @@ public class AnimatAI : LivingEntity {
     int olfactionRange, olfactionAccuracy, hearingRange;
 
     //State Variables
-    enum State { Idle, Chasing, Seaking, Wondering, Grazing }
+    enum State { Idle, Chasing, Seaking, Wondering, Grazing, Nesting }
     public enum Diet { Herbivorous, Omnivorous, Carnivorous}
     State currentState;
     public Diet dietType = Diet.Herbivorous;
@@ -59,9 +59,10 @@ public class AnimatAI : LivingEntity {
 
     //Action Variables
     float nextActionCheckTime = 0;
-    enum targetType { Mob, Essence,Terra, Flora, Water };
+    enum targetType { Mob, Essence,Terra, Flora, Water, Spawner };
     targetType currentTargetType;
     bool hasTask = false;
+    Spawner spawnOrigin;
 
     Material skinDefalt;
     Color defaltColor;
@@ -197,17 +198,7 @@ public class AnimatAI : LivingEntity {
         gameObject.SetActive(true);
     }
 
-    public string AnimatDataOut(){
-        /*string[] animatData = {
-            geneString,
-            baseHealth.ToString(), health.ToString(),
-            baseSatation.ToString(), hunger.ToString(),
-            baseHydration.ToString(), thirst.ToString(),
-            dietinfo.ToString(), priorityTarget,
-            acceleration.ToString(), movmentSpeed.ToString(),
-            attackRange.ToString(), attackAccuracy.ToString(), attackDamage.ToString(),
-            sightRange.ToString(), olfactionRange.ToString(), olfactionAccuracy.ToString(), hearingRange.ToString()
-        };*/
+    public string BeInspected(){
 
         string DataString = string.Format(
                     @"Animat Gene : {0}
@@ -219,7 +210,7 @@ Atributes :-
    Senses   - SR - {14}  OR - {15}  OA - {16}  HR - {17}  
                     ",
                     geneString,
-            baseHealth.ToString(), health.ToString(),
+            baseHealth.ToString(), ((int)health).ToString(),
             baseSatation.ToString(), hunger.ToString(),
             baseHydration.ToString(), thirst.ToString(),
             dietinfo.ToString(), priorityTarget,
@@ -431,10 +422,14 @@ Atributes :-
                     break;
 
                 case State.Grazing:
-                    if ((thirst > baseHydration / 1.1 && currentTargetType == targetType.Water) || (hunger > baseSatation / 1.1 && currentTargetType == targetType.Terra))
+                    if ((thirst > baseHydration / 1.01 && currentTargetType == targetType.Water) || (hunger > baseSatation / 1.01 && currentTargetType == targetType.Terra))
                     {
                         clearPrioritys();
                     }
+                    break;
+
+                case State.Nesting:
+                    Nest(spawnOrigin);
                     break;
 
                 default:
@@ -532,6 +527,9 @@ Atributes :-
                         {
                             clearPrioritys();
                         }
+                        break;
+
+                    case targetType.Spawner:
                         break;
 
                     default:
@@ -645,6 +643,28 @@ Atributes :-
         StartCoroutine(UpdatePath());
     }
 
+    public void Nest(Spawner SpawnOrigin) {
+        if (dead != true) {
+            StopAllCoroutines();
+            FixLocation();
+            spawnOrigin = SpawnOrigin;
+            clearPrioritys();
+            hasTask = true;
+            target = spawnOrigin.transform;
+            currentState = State.Nesting;
+            currentTargetType = targetType.Spawner;
+            clearPrioritys();
+            Debug.Log(gameObject.name + " is Docking");
+            spawnOrigin.Dock(this);
+        }
+    }
+
+    public void Reinitilize() {
+        StartCoroutine(Metabolism());
+        StartCoroutine(DecisionBlock());
+        StartCoroutine(ActionBlock());
+    }
+
     //Clears Prioritys if the target being chased dies
     void OntargetDeath() {
         if (dead != true)
@@ -732,10 +752,11 @@ Atributes :-
                 {
                     FixLocation();
                 }
-                if (dead != true) {
+                if (dead != true && pathfinder.isOnNavMesh != true) {
                     pathfinder.enabled = true;
                     StartCoroutine(UpdatePath());
                 }
+                else { clearPrioritys(); }
             }
             
         }
@@ -794,7 +815,7 @@ Atributes :-
         float nextFootStepTime = 2f;
         nextActionCheckTime = 5f;
         bool PathSet = false;
-        while (hasTask != false && dead != true && pathfinder.enabled == true)
+        while (hasTask != false && dead != true && pathfinder.enabled == true && currentState != State.Idle)
         {
             nextActionCheckTime -= 0.25f;
 
@@ -844,7 +865,7 @@ Atributes :-
 
                 //Sets destination wondering location
                 case State.Wondering:
-                    if (dead != true && pathfinder.enabled == true && pathfinder.enabled == true && pathfinder.isOnNavMesh == true)
+                    if (dead != true && pathfinder.enabled == true && pathfinder.isOnNavMesh == true)
                     {
                         if (PathSet == false)
                         {
@@ -873,6 +894,36 @@ Atributes :-
                     }
                     break;
 
+                /*case State.Nesting:
+                    if (dead != true && pathfinder.enabled == true && currentTargetType == targetType.Spawner)
+                    {
+                        if (PathSet == false)
+                        {
+                            NavMeshHit navHit;
+                            if (NavMesh.SamplePosition(target.position, out navHit, 10f, NavMesh.AllAreas) == true)
+                            {
+                                if (dead != true && pathfinder.enabled == true)
+                                {
+                                    Debug.Log(gameObject.name + "Heading To Spawner");
+                                    PathSet = true;
+                                    pathfinder.SetDestination(navHit.position);
+                                }
+                            }
+                        }
+                        else if (dead != true && targetPosition != null && pathfinder.enabled == true)
+                        {
+                            if (pathfinder.remainingDistance <= 100 || nextActionCheckTime < 0) {
+                                clearPrioritys();
+                                Debug.Log(gameObject.name + " is Docking");
+                                spawnOrigin.Dock(this);
+                            }
+                                
+                            yield return null;
+                        }
+
+                    }
+                    break;*/
+
                 case State.Grazing:
                     hasTask = false;
                     break;
@@ -895,9 +946,9 @@ Atributes :-
             }
 
             //Visability Check
-            if (target == null) { clearPrioritys(); }
+            if (target == null && currentState != State.Nesting) { clearPrioritys(); }
 
-            if (nextActionCheckTime < 0 && dead != true && target != null && currentTargetType == targetType.Mob)
+            if (nextActionCheckTime < 0 && dead != true && target != null && currentTargetType == targetType.Mob && currentState != State.Nesting)
             {
                 if (animatSight.VisabilitiyCheck(target.tag, target) == false || target == null)
                 {

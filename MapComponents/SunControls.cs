@@ -5,7 +5,7 @@ using System.Collections;
 
 public class SunControls : MonoBehaviour {
 
-    public event System.Action Photosynthesis;
+    public event System.Action Photosynthesis, NightFall, DayBreak;
     public float dayLength = 5;
     public int dayCount = 1;
     enum State {Night, Dawn, Morning, Afternoon, Evening, Dusk};
@@ -53,7 +53,7 @@ public class SunControls : MonoBehaviour {
             case State.Evening:
                 transform.rotation = Quaternion.Euler(135f, 0f, 0f);
                 nextState = State.Dusk;
-                if (Photosynthesis != null) { Photosynthesis(); }
+                if (NightFall != null) { NightFall(); }
                 //Debug.Log("Time Set Evening");
                 break;
             case State.Dusk:
@@ -64,7 +64,9 @@ public class SunControls : MonoBehaviour {
             case State.Night:
                 transform.rotation = Quaternion.Euler(190f, 0f, 0f);
                 nextState = State.Dawn;
+                if (DayBreak != null) { DayBreak(); }
                 dayCount++;
+                SimControls.dayCount = dayCount;
                 //Debug.Log("Time Set Night");
                 break;
             default:

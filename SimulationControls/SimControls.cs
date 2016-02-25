@@ -18,6 +18,13 @@ public class SimControls : MonoBehaviour {
     public int spaDensity;
     public int Seed;
 
+    public static int animatCount = 0;
+    public static int dayCount = 0;
+    string mapInfo;
+
+    static string selectionData;
+    bool DataUpdataing;
+
     // Use this for initialization
     void Awake () {
         if (control == null)
@@ -32,22 +39,29 @@ public class SimControls : MonoBehaviour {
 	}
 
     void OnGUI() {
+        float buttonSize = Screen.width / 15;
+        float SectionTextSize = Screen.width / 60;
+        float LabelText = Screen.width / 55;
+        float textBoxBuffer = SectionTextSize + (Screen.width / 80);
+        GUI.skin.label.fontSize = Screen.width / 55;
+        GUI.skin.box.fontSize = (int)SectionTextSize;
+        
         if (GUIEnabled == true) {
-
-            GUI.Box(new Rect(0, 0, 200, 70), "SET TIME :");
-            if (GUI.Button(new Rect(0, 20, 50, 50), timeSetM)) {
+            
+            GUI.Box(new Rect(0, 0, buttonSize * 4, textBoxBuffer), "SET TIME :");
+            if (GUI.Button(new Rect(0, textBoxBuffer, buttonSize, buttonSize), timeSetM)) {
                 if (FindObjectOfType<SunControls>() == true) {
                     FindObjectOfType<SunControls>().SetTime('m');
                 }
             }
-            if (GUI.Button(new Rect(50, 20, 50, 50), timeSetA))
+            if (GUI.Button(new Rect(buttonSize, textBoxBuffer, buttonSize, buttonSize), timeSetA))
             {
                 if (FindObjectOfType<SunControls>() == true)
                 {
                     FindObjectOfType<SunControls>().SetTime('a');
                 }
             }
-            if (GUI.Button(new Rect(100, 20, 50, 50), timeSetE))
+            if (GUI.Button(new Rect(2* buttonSize, textBoxBuffer, buttonSize, buttonSize), timeSetE))
             {
                 if (currentMap.gameObject.GetComponentInChildren<SunControls>() == true)
                 {
@@ -55,54 +69,43 @@ public class SimControls : MonoBehaviour {
                 }
             }
 
-            if (GUI.Button(new Rect(150, 20, 50, 50), photoUp))
+            if (GUI.Button(new Rect(3* buttonSize, textBoxBuffer, buttonSize, buttonSize), photoUp))
             {
                 if (FindObjectOfType<SunControls>() == true)
                 {
                     FindObjectOfType<SunControls>().Photosynthesize();
                 }
             }
-            GUI.Box(new Rect(Screen.width - 200, 0, 200, 70), "TIME SHIFT :");
+            GUI.Box(new Rect(Screen.width - buttonSize * 4, 0, buttonSize * 4, textBoxBuffer), "TIME SHIFT :");
             //GUI.Label(new Rect(Screen.width - 200, 0, 80, 20), "TIME SHIFT");
-            if (GUI.Button(new Rect(Screen.width - 200, 20, 50, 50), timeShift1x))
+            if (GUI.Button(new Rect(Screen.width - buttonSize*4, textBoxBuffer, buttonSize, buttonSize), timeShift1x))
             {
                 Time.timeScale = 1;
             }
 
-            if (GUI.Button(new Rect(Screen.width - 150, 20, 50, 50), timeShift2x))
+            if (GUI.Button(new Rect(Screen.width - buttonSize*3, textBoxBuffer, buttonSize, buttonSize), timeShift2x))
             {
                 Time.timeScale = 2;
             }
 
-            if (GUI.Button(new Rect(Screen.width - 100, 20, 50, 50), timeShift4x))
+            if (GUI.Button(new Rect(Screen.width - buttonSize*2, textBoxBuffer, buttonSize, buttonSize), timeShift4x))
             {
                 Time.timeScale = 4;
             }
 
-            if (GUI.Button(new Rect(Screen.width - 50, 20, 50, 50), timeShift8x))
+            if (GUI.Button(new Rect(Screen.width - buttonSize, textBoxBuffer, buttonSize, buttonSize), timeShift8x))
             {
                 Time.timeScale = 8;
             }
 
-            if (FindObjectOfType<SunControls>() == true && FindObjectOfType<MapGenerator>() == true)
-            {
-                GUI.Box(new Rect(Screen.width - 150, 70, 150, 40), "Day : " + FindObjectOfType<SunControls>().dayCount + "\n Animat Count : " + currentMap.AnimatCount());
-            }
+            GUI.Box(new Rect(Screen.width - 3*buttonSize, buttonSize + textBoxBuffer, buttonSize * 3, 2 * textBoxBuffer),
+            "Day: " + dayCount + "\n Animat Count: " + animatCount);
 
-            if (currentSimOperator.CurrentlySelected() != null) {
-                /*string DataString = string.Format(
-                    @"Animat Gene : {0}
-    Health : {2}/{1} | Satation : {4}/{3} | Hydradtion : {6}/{5}
-    type : {7} | Curently Priority : {8}
-Atributes :-
-   mobility - Acc - {9}  MS - {10}  
-   combat   - AR - {11} AA - {12}  AD - {13}
-   Senses   - SR - {14}  OR - {15}  OA - {16}  HR - {17}  
-                    ",
-                    currentSimOperator.CurrentlySelected().AnimatDataOut());*/
-                    
-                
-                GUI.Box(new Rect(0, Screen.height - 125, 370, 125), currentSimOperator.CurrentlySelected().AnimatDataOut());
+            GUI.Box(new Rect(0, buttonSize + textBoxBuffer, buttonSize * 3, 4 * textBoxBuffer),mapInfo);
+
+            if (selectionData != null) {
+                GUI.Box(new Rect(0, Screen.height - (Screen.height/3.5f), Screen.width/2 , Screen.height/3.5f),"");
+                GUI.Label(new Rect(0, Screen.height - (Screen.height/3.5f), Screen.width/2, Screen.height/3.5f), selectionData);
             }
 
 
@@ -111,6 +114,10 @@ Atributes :-
 
 
     }
+
+    public static void UpdateSelection(string SelectionData) {
+        selectionData = SelectionData;
+    } 
 
     void OnLevelWasLoaded(int level)
     {
@@ -133,7 +140,12 @@ Atributes :-
         Transform CurrentMap = Instantiate(map,Vector3.zero,Quaternion.identity) as Transform;
         currentMap = CurrentMap.GetComponent<MapGenerator>();
         currentMap.mapSetup(Rad, ProPercent, WaterPercent, spaDensity, Seed);
-        currentSimOperator = FindObjectOfType<SimOperator>();
+        mapInfo = string.Format(@"Seed      : {0}
+Radius    : {1}
+Producer %: {2}
+Water %   : {3}
+Spawner Qt: {4}", Seed, Rad, ProPercent, WaterPercent, spaDensity);
         GUIEnabled = true;
+
     }
 }

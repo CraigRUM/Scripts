@@ -1,9 +1,19 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class AnimatEssence : MonoBehaviour {
+public class AnimatEssence : MonoBehaviour, IInspectable {
 
     int hydration = 2, satation = 10;
+
+    public string BeInspected()
+    {
+        string OutputString = string.Format(
+            @"Animat Essence
+Hydration Amount: {0}
+Satation Amount: {0}
+", hydration.ToString(), satation.ToString());
+        return OutputString;
+    }
 
     public void setReaourceAdundance(int Hydration, int Satation) {
         hydration = Hydration;

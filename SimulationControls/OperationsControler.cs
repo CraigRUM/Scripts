@@ -4,7 +4,6 @@ using System.Collections;
 public class OperationsControler : MonoBehaviour {
 
     Vector3 velocity;
-    bool Locked = false;
     Transform targetMob;
     Rigidbody myRigidbody;
 

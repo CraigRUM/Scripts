@@ -232,15 +232,21 @@ public class MapGenerator : MonoBehaviour {
         }
 
         Time.timeScale = 1;
-
+        StartCoroutine(AnimatCount());
     }
 
-    public int AnimatCount() {
-        int animatCount = 0;
-        foreach (Spawner nest in SpawnerList) {
-            animatCount += nest.aliveNPCs;
+    IEnumerator AnimatCount() {
+        int animatCount;
+        while (SpawnerList != null) {
+            animatCount = 0;
+            foreach (Spawner nest in SpawnerList)
+            {
+                animatCount += nest.aliveNPCs;
+            }
+            SimControls.animatCount = animatCount;
+            yield return new WaitForSeconds(2f);
         }
-        return animatCount;
+        
     }
 
     //Terrain setup functions

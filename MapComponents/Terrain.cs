@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class Terrain : MonoBehaviour {
+public class Terrain : MonoBehaviour, IInspectable {
 
     /*
     ////////////////////
@@ -15,6 +15,8 @@ public class Terrain : MonoBehaviour {
     public Transform cSpawner, hSpawner, oSpawner;
 
     public bool isTree = true, hasSeed = false, isWater = false, hasNest = false;
+
+    string[] terrainData = { "Solid","Barron","none","none","none"};
 
     SunControls sol;
 
@@ -64,6 +66,17 @@ public class Terrain : MonoBehaviour {
     Public Interactions
     ////////////////////
     */
+    public string BeInspected() {
+        string OutputString = string.Format(
+            @"Terrain Tile
+Type            : {0}
+AbundanceLevel  : {1}
+HasSpawner      : {2}
+PrimaryProducer : {3}
+HasSeed         : {4}" , terrainData);
+        return OutputString;
+    }
+
     public void AddNest(int nestType, string[] Genes) {
         
         hasNest = true;
@@ -134,6 +147,7 @@ public class Terrain : MonoBehaviour {
         {
             hasSeed = HasSeed;
             isTree = IsTree;
+            terrainData[4] = "true";
             if (abundanceLevel == Abundance.Barron)
             {
                 abundanceLevel++;
@@ -183,17 +197,21 @@ Internal block updaters
             {
                 case Abundance.High:
                     transform.FindChild("TerrainTile(S)(Clone)").transform.FindChild("surface").gameObject.GetComponent<Renderer>().material = high;
+                    terrainData[1] = "High";
                     if (sol != null && hasSeed != true) { sol.Photosynthesis -= UpdateAbundance; }
                     break;
                 case Abundance.Low:
                     transform.FindChild("TerrainTile(S)(Clone)").transform.FindChild("surface").gameObject.GetComponent<Renderer>().material = low;
+                    terrainData[1] = "Medium";
                     break;
                 case Abundance.Empty:
                     transform.FindChild("TerrainTile(S)(Clone)").transform.FindChild("surface").gameObject.GetComponent<Renderer>().material = empty;
+                    terrainData[1] = "Low";
                     break;
                 default:
                     transform.FindChild("TerrainTile(S)(Clone)").transform.FindChild("surface").gameObject.GetComponent<Renderer>().material = barron;
-                    if(sol != null) { sol.Photosynthesis -= UpdateAbundance; }
+                    terrainData[1] = "Barron";
+                    if (sol != null) { sol.Photosynthesis -= UpdateAbundance; }
                     
                     break;
 
@@ -227,6 +245,7 @@ Internal block updaters
             Transform newTile = Instantiate(soildTile, transform.position, Quaternion.Euler(Vector3.right * 90)) as Transform;
             newTile.parent = transform;
             transform.tag = tagList[0];
+            terrainData[0] = "Solid";
             setSurfaceTexture();
         }
         else
@@ -234,6 +253,7 @@ Internal block updaters
             Transform newTile = Instantiate(liquidTile, transform.position, Quaternion.Euler(Vector3.right * 90)) as Transform;
             newTile.parent = transform;
             transform.tag = tagList[1];
+            terrainData[0] = "Liquid";
         }
     }
 
@@ -253,19 +273,24 @@ Internal block updaters
 
     void GrowPrimaryProducer()
     {
+        terrainData[4] = "false";
+        hasSeed = false;
         if (currentType == Type.Solid && hasNest != true) {
             switch (ProducerType)
             {
                 case 1:
                     PlaceModel(.5f, raspBush, 0);
+                    terrainData[3] = "Raspberry Bush";
                     hasTree = true;
                     break;
                 case 2:
-                    PlaceModel(1, appTree, 0); 
+                    PlaceModel(1, appTree, 0);
+                    terrainData[3] = "Apple Tree";
                     hasTree = true;
                     break;
                 default:
                     PlaceModel(.65f, flower, 0);
+                    terrainData[3] = "Flower";
                     break;
             }
             abundanceLevel = Abundance.Barron;
@@ -287,6 +312,7 @@ Internal block updaters
         updatedModel.parent = transform;
         updatedModel.GetComponent<Spawner>().AnimatBaseDna = Genes;
         updatedModel.gameObject.SetActive(true);
+        terrainData[2] = "true";
     }
 
     /*

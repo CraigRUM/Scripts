@@ -6,10 +6,13 @@ public class SimOperator : MonoBehaviour {
 
     public event System.Action TogglePause;
 
-    public float mouseSensitivityX = 50f;
-    public float mouseSensitivityY = 10f;
+    public float mouseSensitivityX = 20f;
+    public float mouseSensitivityY = 20f;
     public float movementSpeed = 5f;
     //public Transform crossHairs;
+
+    string selectionData;
+    IInspectable currentlySelected;
 
     Vector3 moveAmount;
     Vector3 smoothMoveVelocity;
@@ -21,29 +24,18 @@ public class SimOperator : MonoBehaviour {
     float verticalLookRotation;
     float horizontalLookRotation;
 
-    public GameObject animatDisplay;
-    Mesh animatMesh;
-    Material animatMaterial;
+    public GameObject[] Displayobjects = new GameObject[9];
 
     OperationsControler controller;
-
-    public AnimatAI CurrentlySelected(){
-        if (targetMob != null) {
-            return targetMob.GetComponent<AnimatAI>();
-        }
-        return null;
-    }
 
     void Start () {
         controller = GetComponent<OperationsControler>();
         viewCamera = Camera.main.transform;
         Camera.main.orthographicSize = veiwheight;
-        animatMaterial = animatDisplay.GetComponent<Material>();
-        animatMesh = animatDisplay.GetComponent<Mesh>();
     }
 
     void onfllowingDeath() {
-        animatDisplay.SetActive(true);
+        Displayobjects[0].SetActive(true);
         locked = false;
 
     }
@@ -56,15 +48,17 @@ public class SimOperator : MonoBehaviour {
         //Camara Movment controls
         if (locked == true && targetMob != null)
         {
+            transform.rotation = Quaternion.Euler(0,0,0);
             moveDir = (targetMob.position - transform.position).normalized;
-            targetMoveAmount = moveDir * movementSpeed/4;
-            moveAmount = Vector3.SmoothDamp(moveAmount, targetMoveAmount, ref smoothMoveVelocity, .15f);
+            
+            targetMoveAmount = moveDir * movementSpeed;
+            moveAmount = Vector3.SmoothDamp(moveAmount, targetMoveAmount, ref smoothMoveVelocity, .2f);
             controller.Move(moveAmount);
         }
         else {
-            moveDir = new Vector3(Input.GetAxisRaw("Vertical"), 0, -Input.GetAxisRaw("Horizontal")).normalized;
+            moveDir = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical")).normalized;
             targetMoveAmount = moveDir * movementSpeed;
-            moveAmount = Vector3.SmoothDamp(moveAmount, targetMoveAmount, ref smoothMoveVelocity, .15f);
+            moveAmount = Vector3.SmoothDamp(moveAmount, targetMoveAmount, ref smoothMoveVelocity, .2f);
             controller.Move(moveAmount);
         }
 
@@ -78,9 +72,9 @@ public class SimOperator : MonoBehaviour {
             crossHairs.position = point;
         }*/
 
-        if (Input.GetMouseButton(1))
+        if (Input.GetMouseButton(1) && locked != true)
         {
-            transform.Rotate(Vector3.up * Input.GetAxis("Mouse X") * Time.deltaTime * mouseSensitivityX);
+                transform.Rotate(Vector3.up * Input.GetAxis("Mouse X") * Time.deltaTime * mouseSensitivityX);
         }
 
         if (Input.GetMouseButton(2))
@@ -90,30 +84,69 @@ public class SimOperator : MonoBehaviour {
             viewCamera.localEulerAngles = new Vector3(verticalLookRotation, viewCamera.localEulerAngles.y, viewCamera.localEulerAngles.z);
         }
 
-        if (Input.GetMouseButton(0))
+        if (Input.GetMouseButtonUp(0))
         {
+            foreach(GameObject DisplayItem in Displayobjects) { DisplayItem.SetActive(false); }
             RaycastHit lookHit = new RaycastHit();
             Ray lookRay = viewCamera.GetComponent<Camera>().ScreenPointToRay(Input.mousePosition);
             Debug.DrawRay(lookRay.origin, lookRay.direction, Color.green, 200f);
             if (Physics.Raycast(lookRay, out lookHit, 200f))
             {
+                
                 Debug.Log(lookHit.collider.gameObject.ToString() + "Locking on to this");
+                currentlySelected = lookHit.collider.gameObject.GetComponent<IInspectable>();
+
+                if (currentlySelected != null)
+                {
+                    selectionData = currentlySelected.BeInspected();
+                    SimControls.UpdateSelection(selectionData);
+                    StartCoroutine(UpdataSelectionData());
+                }
+                else {
+                    currentlySelected = null;
+                    selectionData = null;
+                    SimControls.UpdateSelection(selectionData);
+                }
+
                 if (lookHit.collider.gameObject.GetComponent<LivingEntity>() == true)
                 {
                     locked = true;
 
                     targetMob = lookHit.collider.gameObject.transform;
 
-                    animatDisplay.SetActive(true);
-                    animatDisplay.transform.localScale = targetMob.transform.localScale;
-                    animatDisplay.GetComponent<Renderer>().material = targetMob.gameObject.GetComponent<Renderer>().material;
+                    Displayobjects[0].SetActive(true);
+                    Displayobjects[0].transform.localScale = targetMob.transform.localScale;
+                    Displayobjects[0].GetComponent<Renderer>().material = targetMob.gameObject.GetComponent<Renderer>().material;
                     targetMob.GetComponent<LivingEntity>().OnDeath += onfllowingDeath;
 
                     transform.position = new Vector3(targetMob.position.x, transform.position.y, targetMob.position.z);
                     viewCamera.localEulerAngles = new Vector3(90, viewCamera.localEulerAngles.y, viewCamera.localEulerAngles.z);
                     transform.Rotate(Vector3.up);
                 }
-        }
+                else if (lookHit.collider.gameObject.GetComponent<AnimatEssence>() == true)
+                {
+                    Displayobjects[1].SetActive(true);
+                }
+                else if (lookHit.collider.gameObject.GetComponent<Terrain>() == true)
+                {
+                    Terrain currentTerrain = lookHit.collider.gameObject.GetComponent<Terrain>();
+                    if (currentTerrain.isWater == true)
+                    {
+                        Displayobjects[2].SetActive(true);
+                    }
+                    else
+                    {
+                        Displayobjects[3].SetActive(true);
+                    }
+                }
+                else if (lookHit.collider.gameObject.GetComponentInParent<PrimaryProducer>() == true)
+                {
+                    /*switch (lookHit.collider.gameObject.name) {
+                        
+                    }*/
+                }
+                else { locked = false; selectionData = null; }
+            }
         }
 
 
@@ -124,7 +157,7 @@ public class SimOperator : MonoBehaviour {
 
         if (Input.GetKeyDown("-") || Input.GetAxis("Mouse ScrollWheel") > 0)
         {
-            veiwheight -= 4;
+            veiwheight -= 5;
             veiwheight = Mathf.Clamp(veiwheight, 10, 50);
             transform.position = new Vector3(transform.position.x, veiwheight, transform.position.z);
             //Camera.main.orthographicSize = veiwheight;
@@ -132,7 +165,7 @@ public class SimOperator : MonoBehaviour {
 
         if (Input.GetKeyDown("+") || Input.GetAxis("Mouse ScrollWheel") < 0)
         {
-            veiwheight += 4; ;
+            veiwheight += 5; ;
             veiwheight = Mathf.Clamp(veiwheight, 10, 50);
             transform.position = new Vector3(transform.position.x, veiwheight, transform.position.z);
             //Camera.main.orthographicSize = veiwheight;
@@ -144,4 +177,19 @@ public class SimOperator : MonoBehaviour {
         }
 
     }
+
+    IEnumerator UpdataSelectionData()
+    {
+        while (currentlySelected !=  null)
+        {
+            if (currentlySelected != null) { 
+                selectionData = currentlySelected.BeInspected();
+            }
+            else { selectionData = null; }
+            SimControls.UpdateSelection(selectionData);
+
+            yield return new WaitForSeconds(0.5f);
+        }
+    }
+
 }
