@@ -63,6 +63,7 @@ public class AnimatAI : LivingEntity , IInspectable {
     targetType currentTargetType;
     bool hasTask = false;
     Spawner spawnOrigin;
+    int reproductionPoints = 1;
 
     Material skinDefalt;
     Color defaltColor;
@@ -220,6 +221,10 @@ Atributes :-
         return DataString;
 
         }
+
+    public int ReproductionPoints() { return reproductionPoints; }
+
+    public string ExposeGene() { return geneString; }
 
     // Runs until the animat is dead
     // Animat uses reasources over time 

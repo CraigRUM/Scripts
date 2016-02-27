@@ -185,7 +185,7 @@ public class MapGenerator : MonoBehaviour {
             }
                 else
                 {
-                    currentTile.AddNest(0, Utility.GenerateGeneString(map.seed, 10));
+                    currentTile.AddNest(0, Utility.GenerateGeneString(map.seed, 11));
                     SpawnerList.Add(currentTile.GetComponentInChildren<Spawner>());
             }
         }
@@ -241,7 +241,7 @@ public class MapGenerator : MonoBehaviour {
             animatCount = 0;
             foreach (Spawner nest in SpawnerList)
             {
-                animatCount += nest.aliveNPCs;
+                animatCount += nest.aliveAnimats;
             }
             SimControls.animatCount = animatCount;
             yield return new WaitForSeconds(2f);

@@ -18,12 +18,16 @@ public class SimControls : MonoBehaviour {
     public int spaDensity;
     public int Seed;
 
+    static int currentSeed;
+
     public static int animatCount = 0;
     public static int dayCount = 0;
     string mapInfo;
 
     static string selectionData;
     bool DataUpdataing;
+
+    public static int CurrentSeed() { return currentSeed; }
 
     // Use this for initialization
     void Awake () {
@@ -140,6 +144,7 @@ public class SimControls : MonoBehaviour {
         Transform CurrentMap = Instantiate(map,Vector3.zero,Quaternion.identity) as Transform;
         currentMap = CurrentMap.GetComponent<MapGenerator>();
         currentMap.mapSetup(Rad, ProPercent, WaterPercent, spaDensity, Seed);
+        SimControls.currentSeed = Seed;
         mapInfo = string.Format(@"Seed      : {0}
 Radius    : {1}
 Producer %: {2}
