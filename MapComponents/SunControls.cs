@@ -53,18 +53,17 @@ public class SunControls : MonoBehaviour {
             case State.Evening:
                 transform.rotation = Quaternion.Euler(135f, 0f, 0f);
                 nextState = State.Dusk;
-                if (NightFall != null) { NightFall(); }
                 //Debug.Log("Time Set Evening");
                 break;
             case State.Dusk:
                 transform.rotation = Quaternion.Euler(179f, 0f, 0f);
                 nextState = State.Night;
+                if (NightFall != null) { NightFall(); }
                 //Debug.Log("Time Set Dusk");
                 break;
             case State.Night:
                 transform.rotation = Quaternion.Euler(190f, 0f, 0f);
                 nextState = State.Dawn;
-                if (DayBreak != null) { DayBreak(); }
                 dayCount++;
                 SimControls.dayCount = dayCount;
                 //Debug.Log("Time Set Night");
@@ -72,6 +71,7 @@ public class SunControls : MonoBehaviour {
             default:
                 transform.rotation = Quaternion.Euler(5f, 0f, 0f);
                 nextState = State.Morning;
+                if (DayBreak != null) { DayBreak(); }
                 if (Photosynthesis != null) { Photosynthesis(); }
                 //Debug.Log("Time Set Dawn");
                 break;

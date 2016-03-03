@@ -82,15 +82,12 @@ HasSeed         : {4}" , terrainData);
         hasNest = true;
         switch (nestType) {
             case 1:
-                for (int i = 0; i < Genes.Length; i++) { Genes[i] = Genes[i].Replace('!', 'o'); }
                 PlaceModel(0.5f,oSpawner, Genes);
                 break;
             case 2:
-                for (int i = 0; i < Genes.Length; i++) { Genes[i] = Genes[i].Replace('!', 'p'); }
                 PlaceModel(0.5f, cSpawner, Genes);
                 break;
             default:
-                for (int i = 0; i < Genes.Length; i++) { Genes[i] = Genes[i].Replace('!', 'h'); }
                 PlaceModel(0.5f, hSpawner, Genes);
                 break;
         }

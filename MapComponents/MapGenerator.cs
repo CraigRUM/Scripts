@@ -175,17 +175,17 @@ public class MapGenerator : MonoBehaviour {
                 currentTile = tileTable[randomTileID];
                 if (i % 4 == 0)
                 {
-                    currentTile.AddNest(2, Utility.GenerateGeneString(map.seed, 8));
+                    currentTile.AddNest(2, Utility.GenerateGeneString(map.seed, 8 , 'p'));
                     SpawnerList.Add(currentTile.GetComponentInChildren<Spawner>());
                 }
                 else if (i % 3 == 0)
                 {
-                    currentTile.AddNest(1, Utility.GenerateGeneString(map.seed, 13));
+                    currentTile.AddNest(1, Utility.GenerateGeneString(map.seed, 13, 'o'));
                     SpawnerList.Add(currentTile.GetComponentInChildren<Spawner>());
             }
                 else
                 {
-                    currentTile.AddNest(0, Utility.GenerateGeneString(map.seed, 11));
+                    currentTile.AddNest(0, Utility.GenerateGeneString(map.seed, 11, 'h'));
                     SpawnerList.Add(currentTile.GetComponentInChildren<Spawner>());
             }
         }

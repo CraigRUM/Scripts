@@ -6,7 +6,7 @@ public class Audition : MonoBehaviour {
 
     public Transform HearingColider;
     Transform Ears;
-    [Range(1, 3)]
+    [Range(0, 3)]
     int hearingQuality;
     Queue<Transform> DetectedTargets;
 
@@ -25,7 +25,7 @@ public class Audition : MonoBehaviour {
 
     //Sets The hearing quality
     public void SetHearingQuality(int HearingQuality) {
-        hearingQuality = Mathf.Clamp(HearingQuality, 1, 3);
+        hearingQuality = Mathf.Clamp(HearingQuality, 0, 3);
         Ears.gameObject.layer = 28 + hearingQuality;
     }
 
@@ -55,10 +55,11 @@ public class Audition : MonoBehaviour {
     {
         Collider[] hitColliders;
 
+        int layerMaskz = 1 << 28;
         int layerMaska = 1 << 29;
         int layerMaskb = 1 << 30;
         int layerMaskc = 1 << 31;
-        hitColliders = Physics.OverlapSphere(transform.position, 2, layerMaska);
+        hitColliders = Physics.OverlapSphere(transform.position, 2, layerMaskz);
 
         foreach (Collider hitcol in hitColliders)
         {
@@ -68,7 +69,7 @@ public class Audition : MonoBehaviour {
             }
         }
 
-        hitColliders = Physics.OverlapSphere(transform.position, 4, layerMaskb);
+        hitColliders = Physics.OverlapSphere(transform.position, 4, layerMaska);
 
         foreach (Collider hitcol in hitColliders)
         {
@@ -78,7 +79,17 @@ public class Audition : MonoBehaviour {
             }
         }
 
-        hitColliders = Physics.OverlapSphere(transform.position, 6, layerMaskc);
+        hitColliders = Physics.OverlapSphere(transform.position, 6, layerMaskb);
+
+        foreach (Collider hitcol in hitColliders)
+        {
+            if (hitcol.gameObject.GetComponent<HearingCotrols>() != null)
+            {
+                hitcol.gameObject.GetComponent<HearingCotrols>().Alert(transform);
+            }
+        }
+
+        hitColliders = Physics.OverlapSphere(transform.position, 8, layerMaskc);
 
         foreach (Collider hitcol in hitColliders)
         {
