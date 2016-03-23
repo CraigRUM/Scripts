@@ -40,9 +40,6 @@ public class AnimatEntity : LivingEntity {
     [Range(1, 10)]
     int veiwQuality, ProxySenceQuality;
 
-    //Sleep cycle if(true) diernal else nocturnal
-    bool activiteHours = true;
-
     enum State { Idle, Chasing, Attacking, Gathering, Sleeping}
     State currentState;
 

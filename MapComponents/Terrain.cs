@@ -18,6 +18,7 @@ public class Terrain : MonoBehaviour, IInspectable {
 
     string[] terrainData = { "Solid","Barron","none","none","none"};
 
+    MapGenerator mainMap;
     SunControls sol;
 
     [Range(0,2)]
@@ -42,6 +43,7 @@ public class Terrain : MonoBehaviour, IInspectable {
     */
 
     void Start () {
+        mainMap = GetComponentInParent<MapGenerator>();
         sol = FindObjectOfType<SunControls>();
         if (isWater == true){
             currentType = Type.Liquid;
@@ -258,10 +260,12 @@ Internal block updaters
     {
         if (hasSeed == true && abundanceLevel == Abundance.High)
         {
+            mainMap.ReasourceGrown();
             GrowPrimaryProducer();
             setSurfaceTexture();
         }
         if (abundanceLevel != Abundance.High) {
+            mainMap.ReasourceGrown();
             abundanceLevel++;
             setSurfaceTexture();
         }

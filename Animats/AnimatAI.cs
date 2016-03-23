@@ -126,6 +126,7 @@ public class AnimatAI : LivingEntity , IInspectable {
         StartCoroutine(Metabolism());
 
         //Cognition
+        spawnOrigin = GetComponentInParent<Spawner>();
         noOfTargetsConsumed = 0;
         StartCoroutine(DecisionBlock());
         StartCoroutine(ActionBlock());    
@@ -246,7 +247,7 @@ Atributes :-
             // Thirst level
             if (thirst != 0)
             {
-                thirst = Mathf.Clamp(thirst - (int)(baseHydration/10), 0, baseHydration);
+                thirst = Mathf.Clamp(thirst - ((int)(baseHydration/10)+1), 0, baseHydration);
                 //Debug.Log(gameObject.name + ": thrist = " + thirst);
             }
             else if (health != 0)
@@ -255,13 +256,14 @@ Atributes :-
                 //Debug.Log(gameObject.name + ": health = " + health + "due to Dehydration");
             }
             else {
+                spawnOrigin.AddData(0);
                 Die();
             }
 
             // Hunger level
             if (hunger != 0)
             {
-                hunger = Mathf.Clamp(hunger - (int)(baseSatation / 20), 0, baseSatation);
+                hunger = Mathf.Clamp(hunger - ((int)(baseSatation / 20) + 1), 0, baseSatation);
                 //Debug.Log(gameObject.name + ": hunger = " + hunger);
             }
             else if(health != 0)
@@ -271,6 +273,7 @@ Atributes :-
             }
             else
             {
+                spawnOrigin.AddData(0);
                 Die();
             }
             yield return new WaitForSeconds(metabolicRate);
@@ -286,7 +289,7 @@ Atributes :-
 
                 //Determines the next priority target
                 case State.Idle:
-                    if (noOfTargetsConsumed >= 4) { animatCombat.FertilizeSoil(); }
+                    if (noOfTargetsConsumed >= 4) { animatCombat.FertilizeSoil(); spawnOrigin.AddData(3); }
                     possibleTargets = animatOlfaction.Sniff();
                     targetPreferenceFound = false;
                     switch (dietType) {
@@ -319,7 +322,7 @@ Atributes :-
                             {
                                 if (possibleTargets != null) {
                                 foreach (Transform posibleTarget in possibleTargets) {
-                                    if (posibleTarget.GetComponent<PrimaryProducer>() == true) {
+                                    if (posibleTarget.GetComponentInParent<PrimaryProducer>() == true) {
                                         priorityTarget = consumeTarget[1];
                                         currentTargetType = targetType.Flora;
                                         StartSearch();
@@ -337,7 +340,7 @@ Atributes :-
                             }
                             break;
                         case Diet.Carnivorous:
-                            if (thirst < baseHydration / 2)
+                            if (thirst < baseHydration / 3)
                             {
                                 priorityTarget = consumeTarget[2];
                                 currentTargetType = targetType.Water;
@@ -359,7 +362,7 @@ Atributes :-
                                         }
                                     }
                                 }
-                                if (targetPreferenceFound != true)
+                                if (targetPreferenceFound != true && hunger < baseSatation/2)
                                 {
                                     priorityTarget = combatTarget;
                                     currentTargetType = targetType.Mob;
@@ -399,7 +402,7 @@ Atributes :-
                                     {
                                         foreach (Transform posibleTarget in possibleTargets)
                                         {
-                                            if (posibleTarget.GetComponent<PrimaryProducer>() == true)
+                                            if (posibleTarget.GetComponentInParent<PrimaryProducer>() == true)
                                             {
                                                 priorityTarget = consumeTarget[1];
                                                 currentTargetType = targetType.Flora;
@@ -420,21 +423,21 @@ Atributes :-
                     break;
 
                 case State.Seaking:
-                    if ((thirst == baseHydration && currentTargetType == targetType.Water) || (hunger == baseSatation && currentTargetType == targetType.Terra) || hunger == baseSatation && currentTargetType == targetType.Essence)
+                    if ((thirst == baseHydration && currentTargetType == targetType.Water) || (hunger == baseSatation && currentTargetType == targetType.Terra))
                     {
                         clearPrioritys();
                     }
                     break;
 
                 case State.Grazing:
-                    if ((thirst > baseHydration / 1.01 && currentTargetType == targetType.Water) || (hunger > baseSatation / 1.01 && currentTargetType == targetType.Terra))
+                    if ((thirst > baseHydration / 1.01 && currentTargetType == targetType.Water) || (hunger > baseSatation / 1.01 && currentTargetType == targetType.Terra) || hunger == baseSatation && currentTargetType == targetType.Essence)
                     {
                         clearPrioritys();
                     }
                     break;
 
                 case State.Nesting:
-                    Nest(spawnOrigin);
+                    Nest();
                     break;
 
                 default:
@@ -472,6 +475,8 @@ Atributes :-
                         rescourceGain = animatCombat.Consume(target);
                         if (rescourceGain != null)
                         {
+                            spawnOrigin.AddData(3);
+                            if (dietType == Diet.Herbivorous) { reproductionPoints += 1; }
                             skinDefalt.color = new Color(102, 51, 0);
                             hunger = Mathf.Clamp(hunger + rescourceGain[1], 0, baseSatation);
                             thirst = Mathf.Clamp(thirst + rescourceGain[0], 0, baseHydration);
@@ -489,6 +494,8 @@ Atributes :-
                         rescourceGain = animatCombat.Consume(target);
                         if (rescourceGain != null)
                         {
+                            spawnOrigin.AddData(6);
+                            reproductionPoints += 3;
                             skinDefalt.color = Color.green;
                             hunger = Mathf.Clamp(hunger + rescourceGain[1], 0, baseSatation);
                             thirst = Mathf.Clamp(thirst + rescourceGain[0], 0, baseHydration);
@@ -506,6 +513,8 @@ Atributes :-
                         rescourceGain = animatCombat.Consume(target);
                         if (rescourceGain != null)
                         {
+                            spawnOrigin.AddData(4);
+                            reproductionPoints += 2;
                             skinDefalt.color = Color.magenta;
                             hunger = Mathf.Clamp(hunger + rescourceGain[1], 0, baseSatation);
                             thirst = Mathf.Clamp(thirst + rescourceGain[0], 0, baseHydration);
@@ -522,6 +531,7 @@ Atributes :-
                     case targetType.Water:
                         if (animatCombat.Consume(target) != null)
                         {
+                            spawnOrigin.AddData(5);
                             thirst = Mathf.Clamp(thirst + animatCombat.Consume(target)[0], 0, baseHydration);
                             //Debug.Log("Water concumsed - Thirst = " + thirst);
                             skinDefalt.color = Color.cyan;
@@ -616,7 +626,7 @@ Atributes :-
                     break;
 
                 case targetType.Flora:
-                    if (target.GetComponent<PrimaryProducer>() == true)
+                    if (target.GetComponentInParent<PrimaryProducer>() == true)
                     {
                         thisColissionRadius = GetComponent<CapsuleCollider>().radius;
                         targetColissionRadius = target.GetComponent<CapsuleCollider>().radius;
@@ -648,17 +658,17 @@ Atributes :-
         StartCoroutine(UpdatePath());
     }
 
-    public void Nest(Spawner SpawnOrigin) {
+    public void Nest() {
         if (dead != true) {
             StopAllCoroutines();
             FixLocation();
-            spawnOrigin = SpawnOrigin;
             clearPrioritys();
             hasTask = true;
             target = spawnOrigin.transform;
             currentState = State.Nesting;
             currentTargetType = targetType.Spawner;
             clearPrioritys();
+            metabolicRate = (int)(0.75f * metabolicRate);
             Debug.Log(gameObject.name + " is Docking");
             spawnOrigin.Dock(this);
         }
@@ -674,12 +684,12 @@ Atributes :-
     void OntargetDeath() {
         if (dead != true)
         {
+            spawnOrigin.AddData(1);
             //Debug.Log(tag + "Killed a creature");
-            hasTask = false;
-            target = null;
-            hasTarget = false;
+            hasTask = true;
             priorityTarget = consumeTarget[3];
             currentTargetType = targetType.Essence;
+            currentState = State.Seaking;
             StartSearch();
         }
 

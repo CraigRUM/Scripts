@@ -14,13 +14,19 @@ public class MapGenerator : MonoBehaviour {
     public Transform tilePrefab;
     public Transform BedRockPrefab;
 
+    //DataCollection
+    SimOptionsUi DataUI;
+    int ReasourceGrowth = 0;
+    int[] DayReportData;
+    List<int[]> InstanceData; 
+
     //Current map variables
     Vector3 currentTireHight;
     Terrain currentTerrain;
     List<Coord> allTileCoords;
     Dictionary<Coord, Terrain> tileTable = new Dictionary<Coord, Terrain>();
     Queue<Coord> shuffleTileCoords;
-    List<Spawner> SpawnerList;
+    List<Spawner> pSpawnerList, sSpawnerList, hSpawnerList;
 
     public void mapSetup(int Rad, float ProPercent, float WaterPercent,int spaDensity, int Seed) {
         map.mapRadius = Rad;
@@ -36,10 +42,8 @@ public class MapGenerator : MonoBehaviour {
     public void GenerateMap()
     {
         Time.timeScale = 0;
-        //Gene string test
-        /*foreach (string thing in Utility.GenerateGeneString(map.seed, 5)) {
-            Debug.Log(thing);
-        }*/
+        DataUI = FindObjectOfType<SimOptionsUi>();
+
         //Setting up generated map object
         currentTireHight = new Vector3(0, 0, 0);
         tileTable = new Dictionary<Coord, Terrain>();
@@ -58,6 +62,7 @@ public class MapGenerator : MonoBehaviour {
         }
         Transform solHolder = Instantiate(sol, transform.position + Vector3.up * 5, Quaternion.Euler(Vector3.right * 20)) as Transform;
         solHolder.parent = transform;
+        solHolder.GetComponent<SunControls>().NightFall += OnDayEnd;
 
         if (transform.FindChild("StrandHolder(Clone)"))
         {
@@ -167,7 +172,9 @@ public class MapGenerator : MonoBehaviour {
         }
 
         // Randomly placing Spawners base on map spawner density
-        SpawnerList = new List<Spawner>();
+        pSpawnerList = new List<Spawner>();
+        sSpawnerList = new List<Spawner>();
+        hSpawnerList = new List<Spawner>();
         int spawnerCount = map.spawnerDensity * 4;
         for (int i = 0; i < spawnerCount; i++)
         {
@@ -176,17 +183,17 @@ public class MapGenerator : MonoBehaviour {
                 if (i % 4 == 0)
                 {
                     currentTile.AddNest(2, Utility.GenerateGeneString(map.seed, 8 , 'p'));
-                    SpawnerList.Add(currentTile.GetComponentInChildren<Spawner>());
+                    pSpawnerList.Add(currentTile.GetComponentInChildren<Spawner>());
                 }
                 else if (i % 3 == 0)
                 {
                     currentTile.AddNest(1, Utility.GenerateGeneString(map.seed, 13, 'o'));
-                    SpawnerList.Add(currentTile.GetComponentInChildren<Spawner>());
+                    sSpawnerList.Add(currentTile.GetComponentInChildren<Spawner>());
             }
                 else
                 {
                     currentTile.AddNest(0, Utility.GenerateGeneString(map.seed, 11, 'h'));
-                    SpawnerList.Add(currentTile.GetComponentInChildren<Spawner>());
+                    hSpawnerList.Add(currentTile.GetComponentInChildren<Spawner>());
             }
         }
 
@@ -235,11 +242,67 @@ public class MapGenerator : MonoBehaviour {
         StartCoroutine(AnimatCount());
     }
 
+    public void OnDayEnd() {
+        if (InstanceData == null) { InstanceData = new List<int[]>(); }
+
+        DayReportData = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+
+        DayReportData[0] = SimControls.dayCount;
+        DayReportData[1] = ReasourceGrowth;
+
+        foreach (Spawner nest in pSpawnerList)
+        {
+            for (int i = 0; i < nest.GetData().Length; i++) {
+                DayReportData[(i + 2)] += nest.GetData()[i];
+            }
+            DayReportData[9] += nest.maxAnimats;
+            DayReportData[10] += nest.aliveAnimats;
+        }
+        foreach (Spawner nest in sSpawnerList)
+        {
+            for (int i = 0; i < nest.GetData().Length; i++)
+            {
+                DayReportData[(i + 2)] += nest.GetData()[i];
+            }
+            DayReportData[11] += nest.maxAnimats;
+            DayReportData[12] += nest.aliveAnimats;
+        }
+        foreach (Spawner nest in hSpawnerList)
+        {
+            for (int i = 0; i < nest.GetData().Length; i++)
+            {
+                DayReportData[(i + 2)] += nest.GetData()[i];
+            }
+            DayReportData[13] += nest.maxAnimats;
+            DayReportData[14] += nest.aliveAnimats;
+        }
+
+        ReasourceGrowth = 0;
+        DataUI.GenerateDayReport(DayReportData);
+        InstanceData.Add(DayReportData);
+    }
+
+    public List<int[]> EndData() {
+        return InstanceData;
+    }
+
+    public void ReasourceGrown() {
+        ReasourceGrowth++;
+    }
+
     IEnumerator AnimatCount() {
         int animatCount;
-        while (SpawnerList != null) {
+        while (pSpawnerList != null && sSpawnerList != null && hSpawnerList != null) {
             animatCount = 0;
-            foreach (Spawner nest in SpawnerList)
+            foreach (Spawner nest in pSpawnerList)
+            {
+                animatCount += nest.aliveAnimats;
+            }
+            foreach (Spawner nest in sSpawnerList)
+            {
+                animatCount += nest.aliveAnimats;
+            }
+            foreach (Spawner nest in hSpawnerList)
             {
                 animatCount += nest.aliveAnimats;
             }

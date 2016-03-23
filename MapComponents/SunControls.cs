@@ -79,10 +79,11 @@ public class SunControls : MonoBehaviour {
     }
 
     IEnumerator DayNightCycle() {
-        nextState = State.Dawn;
+        nextState = State.Morning;
+        TimeSet(nextState);
         while (PassageOfTime == true) {
             yield return new WaitForSeconds(dayLength);
-            TimeSet((nextState));
+            TimeSet(nextState);
         }
     }
 

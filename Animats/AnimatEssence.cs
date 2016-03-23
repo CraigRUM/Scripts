@@ -109,8 +109,8 @@ Satation Amount: {0}
     IEnumerator Decay() {
         int decayCount = 6;
         while (hydration + satation != 0 && decayCount > 0) {
-            hydration -= (int)0.25f*hydration;
-            satation -= (int)0.25f * satation;
+            hydration -= (int)(0.25f* hydration);
+            satation -= (int)(0.25f * satation);
             transform.localScale -= transform.localScale * 0.25f;
             DecaySound();
             Decomposition();

@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class SimControls : MonoBehaviour {
 
@@ -8,6 +9,7 @@ public class SimControls : MonoBehaviour {
     bool GUIEnabled;
     MapGenerator currentMap;
     SimOperator currentSimOperator;
+    SimOptionsUi userOptions;
 
     public Texture2D timeShift1x, timeShift2x, timeShift4x, timeShift8x;
     public Texture2D timeSetM, timeSetA, timeSetE, photoUp;
@@ -17,6 +19,8 @@ public class SimControls : MonoBehaviour {
     public float WaterPercent;
     public int spaDensity;
     public int Seed;
+
+    public List<int[]> InstanceData = null;
 
     static int currentSeed;
 
@@ -128,6 +132,7 @@ public class SimControls : MonoBehaviour {
         if (level == 1)
         {
             MapSetup();
+            userOptions = FindObjectOfType<SimOptionsUi>();
         }
         else if(level == 0)
         {
@@ -152,5 +157,16 @@ Water %   : {3}
 Spawner Qt: {4}", Seed, Rad, ProPercent, WaterPercent, spaDensity);
         GUIEnabled = true;
 
+    }
+
+    public void MapData() {
+        MapGenerator MapObject = currentMap.GetComponent<MapGenerator>();
+        InstanceData = MapObject.EndData();
+        if (InstanceData != null) {
+            Utility.DataToCSV(InstanceData, currentSeed.ToString());
+            Debug.Log("file writen");
+        }
+        userOptions.SetOS();
+        Time.timeScale = 1;
     }
 }

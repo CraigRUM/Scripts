@@ -60,7 +60,7 @@ public class Combat : MonoBehaviour {
 
         int layerMaska = 1 << 25;
 
-        hitColliders = Physics.OverlapSphere(transform.position, 3, layerMaska);
+        hitColliders = Physics.OverlapSphere(transform.position, 8, layerMaska);
 
         foreach (Collider hitcol in hitColliders)
         {

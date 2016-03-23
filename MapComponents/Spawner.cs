@@ -9,6 +9,7 @@ public class Spawner : MonoBehaviour {
     public string[] AnimatBaseDna;
     public int maxAnimats = 10;
     Wave[] waves;
+    int[] ReportData = new int[] {0,0,0,0,0,0,0};
 
     Wave currentWave;
     int currentWaveNumber;
@@ -30,13 +31,15 @@ public class Spawner : MonoBehaviour {
 
     void Update() {
         if (remaingAnimats > 0 && Time.time > nextSpawnTime) {
-            remaingAnimats--;
+            
             nextSpawnTime = Time.time + currentWave.spawnDelay;
 
             AnimatAI spawnedNPC = Instantiate(animat, transform.position + new Vector3(Random.Range(2,8),1, Random.Range(2, 8)), Quaternion.identity) as AnimatAI;
-            spawnedNPC.AtributeSetup(AnimatBaseDna[remaingAnimats]);
+            spawnedNPC.AtributeSetup(AnimatBaseDna[remaingAnimats-1]);
             spawnedNPC.OnDeath += onAnimatDeath;
+            spawnedNPC.transform.parent = transform;
             currentAnimats.Add(spawnedNPC);
+            remaingAnimats--;
             aliveAnimats++;
         }
     }
@@ -60,15 +63,17 @@ public class Spawner : MonoBehaviour {
 
     void NextWave()
     {
-        remaingAnimats = AnimatBaseDna.Length;
-        currentWaveNumber++;
-        print("wave " + currentWaveNumber);
+        if (AnimatBaseDna != null) {
+            remaingAnimats = AnimatBaseDna.Length;
+            currentWaveNumber++;
+            print("wave " + currentWaveNumber);
+        }
     }
 
     void RecallAnimats() {
         Debug.Log(gameObject.name + " Recalling Animats");
         currentAnimats.RemoveAll(item => item == null);
-        foreach (AnimatAI animat in currentAnimats) { animat.Nest(this); }
+        foreach (AnimatAI animat in currentAnimats) { animat.Nest(); }
     }
 
     public void Dock(AnimatAI AnimatToDock) {
@@ -78,9 +83,11 @@ public class Spawner : MonoBehaviour {
             if (dockedAnimats.Count == currentAnimats.Count) {
                 NestFull = true;
                 Debug.Log("Nest full");
-                if (SimControls.dayCount % 1 == 0) {
+                if (SimControls.dayCount % 1 == 0 && dockedAnimats.Count >= 2)
+                {
                     pendingGenes = Reproduce();
                 }
+                else { AnimatBaseDna = null; Debug.Log("Spawner Depleted"); }
             }
         }
     }
@@ -113,10 +120,10 @@ public class Spawner : MonoBehaviour {
             if (newGene != null)
             {
                 SplicedGenes.Add(newGene);
-                Debug.Log(newGene);
+                //Debug.Log(newGene);
             }
             else {
-                Debug.Log("invalid gene : " + newGene);
+                //Debug.Log("invalid gene : " + newGene);
                 i--;
             }
         }
@@ -126,6 +133,7 @@ public class Spawner : MonoBehaviour {
     }
 
     string GeneSplice(string GeneStringA, string GeneStringB) {
+        int MutationCheck = Random.Range(0, 9999);
         string outputGene = "";
         bool RemaingCombonations = true;
         int GeneLength = GeneStringA.Length;
@@ -137,19 +145,46 @@ public class Spawner : MonoBehaviour {
                 switch (i)
                 {
                     case 0:
-                        outputGene += chromosomesGroupA[i] + ",";
+                        if (MutationCheck == i) {
+                            outputGene += Random.Range(0x00, 0xff).ToString() + ",";
+                        } else {
+                            outputGene += chromosomesGroupA[i] + ",";
+                        }
                         break;
 
                     case 1:
-                        outputGene += chromosomesGroupA[i] + ",";
+                        if (MutationCheck == i)
+                        {
+                            outputGene += Random.Range(0x00, 0xff).ToString() + ",";
+                        }
+                        else
+                        {
+                            outputGene += chromosomesGroupA[i] + ",";
+                        }
                         break;
 
                     case 2:
-                        outputGene += chromosomesGroupB[i].Split(':')[0] + ":" + chromosomesGroupA[i].Split(':')[1] + ",";
+                        if (MutationCheck == i)
+                        {
+                            outputGene += Random.Range(0x00, 0xff).ToString() + ":" + Random.Range(0x00, 0xff).ToString() + ",";
+                        }
+                        else
+                        {
+                            outputGene += chromosomesGroupB[i].Split(':')[0] + ":" + chromosomesGroupA[i].Split(':')[1] + ",";
+                        }
+                        
                         break;
 
                     case 3:
-                        outputGene += chromosomesGroupB[i] + ",";
+                        if (MutationCheck == i)
+                        {
+                            outputGene += Random.Range(0x0, 0xf).ToString() + ",";
+                        }
+                        else
+                        {
+                            outputGene += chromosomesGroupB[i] + ",";
+                        }
+                        
                         break;
 
                     case 4:
@@ -157,39 +192,103 @@ public class Spawner : MonoBehaviour {
                         break;
 
                     case 5:
-                        outputGene += chromosomesGroupA[i] + ",";
+                        if (MutationCheck == i)
+                        {
+                            outputGene += Random.Range(0x0, 0xf).ToString() + ",";
+                        }
+                        else
+                        {
+                            outputGene += chromosomesGroupA[i] + ",";
+                        }
                         break;
 
                     case 6:
-                        outputGene += chromosomesGroupA[i] + ",";
+                        if (MutationCheck == i)
+                        {
+                            outputGene += Random.Range(0x0, 0xf).ToString() + ",";
+                        }
+                        else
+                        {
+                            outputGene += chromosomesGroupA[i] + ",";
+                        }
                         break;
 
                     case 7:
-                        outputGene += chromosomesGroupB[i] + ",";
+                        if (MutationCheck == i)
+                        {
+                            outputGene += Random.Range(0x0, 0xf).ToString() + ",";
+                        }
+                        else
+                        {
+                            outputGene += chromosomesGroupB[i] + ",";
+                        }
                         break;
 
                     case 8:
-                        outputGene += chromosomesGroupB[i] + ",";
+                        if (MutationCheck == i)
+                        {
+                            outputGene += Random.Range(0x0, 0xf).ToString() + ",";
+                        }
+                        else
+                        {
+                            outputGene += chromosomesGroupB[i] + ",";
+                        }
                         break;
 
                     case 9:
-                        outputGene += chromosomesGroupB[i] + ",";
+                        if (MutationCheck == i)
+                        {
+                            outputGene += Random.Range(0x00, 0xff).ToString() + ",";
+                        }
+                        else
+                        {
+                            outputGene += chromosomesGroupB[i] + ",";
+                        }
                         break;
 
                     case 10:
-                        outputGene += chromosomesGroupB[i] + ",";
+                        if (MutationCheck == i)
+                        {
+                            outputGene += Random.Range(0x0, 0xf).ToString() + ",";
+                        }
+                        else
+                        {
+                            outputGene += chromosomesGroupB[i] + ",";
+                        }
                         break;
 
                     case 11:
-                        outputGene += chromosomesGroupA[i] + ",";
+                        if (MutationCheck == i)
+                        {
+                            outputGene += Random.Range(0x0, 0xf).ToString() + ",";
+                        }
+                        else
+                        {
+                            outputGene += chromosomesGroupA[i] + ",";
+                        }
                         break;
 
                     case 12:
-                        outputGene += chromosomesGroupA[i] + ",";
+                        if (MutationCheck == i)
+                        {
+                            outputGene += Random.Range(0x0, 0xf).ToString() + ",";
+                        }
+                        else
+                        {
+                            outputGene += chromosomesGroupA[i] + ",";
+                        }
                         break;
 
                     case 13:
-                        outputGene += chromosomesGroupB[i];
+                        if (MutationCheck == i)
+                        {
+                            outputGene += Random.Range(0, 3).ToString() + ",";
+                        }
+                        else
+                        {
+                            outputGene += chromosomesGroupB[i]; ;
+                        }
+                        
                         break;
                 }
             }
@@ -227,9 +326,21 @@ public class Spawner : MonoBehaviour {
             pendingGenes = false;
             dockedAnimats.Clear();
             NestFull = false;
-            if (currentWaveNumber < 5) { NextWave(); }
+            NextWave();
         }
         
+    }
+
+    public int[] GetData() {
+        return ReportData;
+    }
+
+    public void AddData(int DataType) {
+        ReportData[DataType]++;
+    }
+
+    public void ResetData() {
+        ReportData = new int[] { 0, 0, 0, 0, 0, 0, 0};
     }
 
     [System.Serializable]

@@ -7,6 +7,8 @@ public class SimOptionsUi : MonoBehaviour {
 
     public RectTransform menu;
     public GameObject menuControls;
+    public DayReport reportOutput;
+    bool OutputStatus = true;
     bool HasMenu = false;
 
     void Awake() {
@@ -50,12 +52,37 @@ public class SimOptionsUi : MonoBehaviour {
         }
     }
 
+    public void GenerateDayReport(int[] ReportData) {
+        reportOutput.gameObject.SetActive(true);
+        reportOutput.GenerateDayReport(ReportData);
+        Time.timeScale = 0;
+    }
+
     public void RestartSim()
     {
         //SceneManager.LoadScene("AITestGround");
     }
 
+    public void SetOS() {
+        OutputStatus = true;
+    }
+
+    public void SaveInstanceData() {
+
+    }
+
     public void QuitToMenu() {
+        StartCoroutine(OutputCheck());
+        FindObjectOfType<SimControls>().MapData();
+    }
+
+    IEnumerator OutputCheck() {
+        OutputStatus = false;
+        while (OutputStatus != true)
+        {
+            Debug.Log("waiting");
+            yield return new WaitForSeconds(1f);
+        }
         SceneManager.LoadScene("MenuScene");
     }
 }

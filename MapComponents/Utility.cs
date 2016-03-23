@@ -1,4 +1,6 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
+using System.IO;
 
 public static class Utility{
 
@@ -108,5 +110,15 @@ public static class Utility{
         if (normalizedGeneScore <= TotalPointMaximum) {
             return true; }
         return false;
+    }
+
+    public static void DataToCSV(List<int[]> Data, string seed) {
+        string filePath = string.Format(@"C:\Users\Craig\Desktop\{0}.csv", (seed + (Data[0].Length - 1).ToString()));
+        string fileData = "DayCount,ReasourceGrowth,Starvation,Fertilization,Predation,GrassConsumed,FruitConsumed,WaterConsumed,EssenceConsumed,PreditorStartCount,PreditorEndCountCount,ScavengerStartCount,ScavengerEndCount,HerbivourStartCount,HerbivourEndCount\n";
+        foreach (int[] DayData in Data) {
+            fileData += string.Join(",", new List<int>(DayData).ConvertAll(i => i.ToString()).ToArray());
+            fileData += "\n";
+        }
+        File.WriteAllText(filePath,fileData);
     }
 }
