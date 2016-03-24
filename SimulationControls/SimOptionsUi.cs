@@ -5,18 +5,22 @@ using System.Collections;
 
 public class SimOptionsUi : MonoBehaviour {
 
+    //Gui Components
     public RectTransform menu;
     public GameObject menuControls;
     public DayReport reportOutput;
+
+    //State Variables
     bool OutputStatus = true;
     bool HasMenu = false;
 
+    //Runtime Component set up
     void Awake() {
         menuControls.SetActive(false);
         FindObjectOfType<SimOperator>().TogglePause += ToggleMenu;
-        //FindObjectOfType<Player>().TogglePause += ToggleMenu;
     }
 
+    //Toggles the pause menus visability
     void ToggleMenu() {
         if (HasMenu == false){
             menuControls.SetActive(true);
@@ -26,6 +30,7 @@ public class SimOptionsUi : MonoBehaviour {
         }
     }
 
+    //Toggle menu animation
     IEnumerator PauseMenuAnimation(float start,float end)
     {
         float speed = 2.5f;
@@ -52,30 +57,37 @@ public class SimOptionsUi : MonoBehaviour {
         }
     }
 
+    //Use to generate a day report with given values
+    //Pauses sim when report has been generated
     public void GenerateDayReport(int[] ReportData) {
         reportOutput.gameObject.SetActive(true);
         reportOutput.GenerateDayReport(ReportData);
         Time.timeScale = 0;
     }
 
+    //Restarts current sim
     public void RestartSim()
     {
-        //SceneManager.LoadScene("AITestGround");
+        SceneManager.LoadScene("SimulationScene");
     }
 
+    //To inform the exit function when saving is compelte
     public void SetOS() {
         OutputStatus = true;
     }
 
+    //Saves current instance data to csv
     public void SaveInstanceData() {
-
+        FindObjectOfType<SimControls>().MapData();
     }
 
+    //Saves InstanceData csv and quits to main menu
     public void QuitToMenu() {
         StartCoroutine(OutputCheck());
         FindObjectOfType<SimControls>().MapData();
     }
 
+    //Waits till data is saved befor quiting
     IEnumerator OutputCheck() {
         OutputStatus = false;
         while (OutputStatus != true)

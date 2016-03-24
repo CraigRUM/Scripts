@@ -1,22 +1,27 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-
-
 public class SunControls : MonoBehaviour {
 
+    //Simulation time events
     public event System.Action Photosynthesis, NightFall, DayBreak;
+
+    //Day properties
     public float dayLength = 5;
     public int dayCount = 1;
+
+    //State variables
     enum State {Night, Dawn, Morning, Afternoon, Evening, Dusk};
     bool PassageOfTime;
     State nextState;
 
+    //Starts the passage of event time for the simulation
     void Start () {
         PassageOfTime = true;
         StartCoroutine(DayNightCycle());
     }
 
+    //Changes the time to the requested time(for gui accelorators)
     public void SetTime(char time) {
         switch (time) {
             case 'm':
@@ -31,11 +36,13 @@ public class SunControls : MonoBehaviour {
         }
     }
 
+    //Gui accelerator for photosynthasis
     public void Photosynthesize()
     {
         if (Photosynthesis != null) { Photosynthesis(); }
     }
 
+    //Sets the current light level and performs time events
     void TimeSet(State TargetTime) {
         switch (TargetTime) {
             case State.Morning:
@@ -78,6 +85,7 @@ public class SunControls : MonoBehaviour {
         }
     }
 
+    //Changes the time in set intervals
     IEnumerator DayNightCycle() {
         nextState = State.Morning;
         TimeSet(nextState);

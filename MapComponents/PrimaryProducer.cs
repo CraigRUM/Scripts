@@ -3,10 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System;
 
-/*Todo!*/
-//subscribe to sun script 
-//add consumable fruit object
-
 public class PrimaryProducer : MonoBehaviour {
 
 /*

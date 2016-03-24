@@ -9,12 +9,14 @@ public class Sight : MonoBehaviour {
     float SightDist;
     AnimatAI Decision;
 
+    //Component Initilization
     void Start () {
         Decision = GetComponent<AnimatAI>();
         heightMultiplyer = 0.25f;
         groundDir = new Vector3(0, -heightMultiplyer);
     }
 
+    //Attribute initilization
     public void SetStats(float Srange)
     {
         SightDist = Srange;

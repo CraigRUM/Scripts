@@ -2,6 +2,11 @@
 using System.Collections;
 using UnityEngine.UI;
 
+/// <summary>
+/// This code is used to generate Pi charts and is an augmented version 
+/// of source code from a youtube turorial url : 
+/// </summary>
+
 public class PiGraph : MonoBehaviour {
 
     public int[] values;

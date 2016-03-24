@@ -1,9 +1,15 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+/// <summary>
+/// This Class is singlton base sim controller
+/// designed to control the operations of a 
+/// simulation instance and persists throughout scenes 
+/// </summary>
 
 public class SimControls : MonoBehaviour {
 
+    //Simulation Objects
     public static SimControls control;
     public Transform map;
     bool GUIEnabled;
@@ -11,29 +17,31 @@ public class SimControls : MonoBehaviour {
     SimOperator currentSimOperator;
     SimOptionsUi userOptions;
 
+    //GUI Button Textures
     public Texture2D timeShift1x, timeShift2x, timeShift4x, timeShift8x;
-    public Texture2D timeSetM, timeSetA, timeSetE, photoUp;
+    public Texture2D timeSetM, timeSetA, timeSetE, photoUp, takeScreenShot;
 
+
+    //Instance Data Members
     public int Rad;
     public float ProPercent;
     public float WaterPercent;
     public int spaDensity;
     public int Seed;
 
+
+    //Instance Data output holders
     public List<int[]> InstanceData = null;
-
     static int currentSeed;
-
     public static int animatCount = 0;
     public static int dayCount = 0;
     string mapInfo;
-
     static string selectionData;
     bool DataUpdataing;
 
     public static int CurrentSeed() { return currentSeed; }
 
-    // Use this for initialization
+    // God Object Managment
     void Awake () {
         if (control == null)
         {
@@ -46,6 +54,7 @@ public class SimControls : MonoBehaviour {
         }
 	}
 
+    //Draws The gui elements for the simulation
     void OnGUI() {
         float buttonSize = Screen.width / 15;
         float SectionTextSize = Screen.width / 60;
@@ -86,6 +95,11 @@ public class SimControls : MonoBehaviour {
             }
             GUI.Box(new Rect(Screen.width - buttonSize * 4, 0, buttonSize * 4, textBoxBuffer), "TIME SHIFT :");
             //GUI.Label(new Rect(Screen.width - 200, 0, 80, 20), "TIME SHIFT");
+            if (GUI.Button(new Rect(Screen.width - buttonSize * 4, textBoxBuffer + buttonSize, buttonSize, buttonSize), takeScreenShot))
+            {
+                Application.CaptureScreenshot(currentSeed.ToString()+System.DateTime.Now.Second.ToString()+".png");
+            }
+
             if (GUI.Button(new Rect(Screen.width - buttonSize*4, textBoxBuffer, buttonSize, buttonSize), timeShift1x))
             {
                 Time.timeScale = 1;
@@ -123,16 +137,22 @@ public class SimControls : MonoBehaviour {
 
     }
 
+    //Updates the Current guis selection data with an inspection string
     public static void UpdateSelection(string SelectionData) {
         selectionData = SelectionData;
     } 
 
+    //Sets up for the relivant scene 
     void OnLevelWasLoaded(int level)
     {
         if (level == 1)
         {
             MapSetup();
             userOptions = FindObjectOfType<SimOptionsUi>();
+            if (userOptions.reportOutput != null) {
+                userOptions.reportOutput.Seed = currentSeed.ToString();
+            }
+            
         }
         else if(level == 0)
         {
@@ -140,6 +160,7 @@ public class SimControls : MonoBehaviour {
         }
     }
 
+    //Generates a map in the relivant scene with pre-obtained parameters
     public void MapSetup()
     {
         /*if (FindObjectOfType<MapGenerator>())
@@ -159,6 +180,7 @@ Spawner Qt: {4}", Seed, Rad, ProPercent, WaterPercent, spaDensity);
 
     }
 
+    //Writes the current Instance Data to a csv
     public void MapData() {
         MapGenerator MapObject = currentMap.GetComponent<MapGenerator>();
         InstanceData = MapObject.EndData();

@@ -28,6 +28,7 @@ public class MapGenerator : MonoBehaviour {
     Queue<Coord> shuffleTileCoords;
     List<Spawner> pSpawnerList, sSpawnerList, hSpawnerList;
 
+    //Used to initilize map data before map generation 
     public void mapSetup(int Rad, float ProPercent, float WaterPercent,int spaDensity, int Seed) {
         map.mapRadius = Rad;
         map.producerPercent = ProPercent;
@@ -242,6 +243,7 @@ public class MapGenerator : MonoBehaviour {
         StartCoroutine(AnimatCount());
     }
 
+    //Generates data from current day and passes it to the day report gui
     public void OnDayEnd() {
         if (InstanceData == null) { InstanceData = new List<int[]>(); }
 
@@ -282,14 +284,17 @@ public class MapGenerator : MonoBehaviour {
         InstanceData.Add(DayReportData);
     }
 
+    //Generates Instance Data to be writen to csv
     public List<int[]> EndData() {
         return InstanceData;
     }
 
+    //Data log for reasource growth
     public void ReasourceGrown() {
         ReasourceGrowth++;
     }
 
+    //Logs the animat count for the gui output
     IEnumerator AnimatCount() {
         int animatCount;
         while (pSpawnerList != null && sSpawnerList != null && hSpawnerList != null) {
@@ -346,6 +351,7 @@ public class MapGenerator : MonoBehaviour {
         }
     }
 
+    //Places tile at the given coordinates
     void placeTile(Transform mapHolder, Transform SelectedPrefab, int x, int y) {
         Vector3 tilePosition;
         tilePosition = CoordtoPosition(x, y);
@@ -357,6 +363,7 @@ public class MapGenerator : MonoBehaviour {
         currentTerrain = newTile.GetComponent<Terrain>();
     }
     
+    //Modderats interpolation for terrain undulation
     bool HeightConnected(Coord currentTile, char opposingHeight) {
         int HeightDist = 0;
         Coord TempCoord;
@@ -433,6 +440,7 @@ public class MapGenerator : MonoBehaviour {
         }
     }
 
+    //Gives a vector for a given set of coordantes
     Vector3 CoordtoPosition(int x, int y)
     {
 
@@ -453,6 +461,7 @@ public class MapGenerator : MonoBehaviour {
         return new Vector3(xCoord, 0, yCoord);
     }
 
+    //Get a random Coord from a list of all coords
     public Coord GetRandomCoord()
     {
         Coord randomCoord = shuffleTileCoords.Dequeue();

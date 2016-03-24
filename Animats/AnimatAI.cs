@@ -200,6 +200,7 @@ public class AnimatAI : LivingEntity , IInspectable {
         gameObject.SetActive(true);
     }
 
+    //Inspectable interface method Gives information on the animat as a string for output
     public string BeInspected(){
 
         string DataString = string.Format(
@@ -223,8 +224,10 @@ Atributes :-
 
         }
 
+    //Gives the animats chances of reproducing as an int
     public int ReproductionPoints() { return reproductionPoints; }
 
+    //Gives the animats current Atribute Gene as a string
     public string ExposeGene() { return geneString; }
 
     // Runs until the animat is dead
@@ -658,6 +661,7 @@ Atributes :-
         StartCoroutine(UpdatePath());
     }
 
+    //Invokes the animat to return to its spawner of origin
     public void Nest() {
         if (dead != true) {
             StopAllCoroutines();
@@ -674,6 +678,7 @@ Atributes :-
         }
     }
 
+    //Reinitilizes the animat ai after nesting
     public void Reinitilize() {
         StartCoroutine(Metabolism());
         StartCoroutine(DecisionBlock());
@@ -695,11 +700,13 @@ Atributes :-
 
     }
 
+    //Ondeath
     protected override void Die() {
         StopAllCoroutines();
         base.Die();
     }
 
+    //Outputs the Amount of reasources the animat can take
     public int[] ReasourceDeficite() {
         return new int[] { baseHydration - thirst,baseSatation - hunger };
     }
@@ -777,6 +784,7 @@ Atributes :-
         }
     }
 
+    //Atempt to return animats to the navmesh if an error occours
     void FixLocation() {
         NavMeshHit navHit;
         if (NavMesh.SamplePosition(transform.position, out navHit, 10f, NavMesh.AllAreas) == true)

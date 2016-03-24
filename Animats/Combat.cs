@@ -47,12 +47,14 @@ public class Combat : MonoBehaviour {
         return null;
     }
 
+    //Arribute initilzation
     public void SetStats(float Arange,float Aacuracy,float Adamage) {
         attackRange = Arange;
         accuracy = Aacuracy;
         damage = Adamage;
     }
 
+    //Fertilization function
     public void FertilizeSoil()
     {
         Debug.Log("fertilization initiated");

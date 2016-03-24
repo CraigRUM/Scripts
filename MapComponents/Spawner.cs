@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 public class Spawner : MonoBehaviour {
 
+    //Wave Variables
     public AnimatAI animat;
     public List<AnimatAI> currentAnimats, dockedAnimats;
     public string[] AnimatBaseDna;
@@ -21,6 +22,7 @@ public class Spawner : MonoBehaviour {
     int remaingAnimats;
     float nextSpawnTime;
 
+    //initilization
     void Start() {
         Wave SetWave = new Wave(maxAnimats, 0.5f);
         waves = new Wave[] { SetWave , SetWave , SetWave , SetWave , SetWave };
@@ -29,6 +31,7 @@ public class Spawner : MonoBehaviour {
         FindObjectOfType<SunControls>().DayBreak += UnDock;
     }
 
+    //Incharge of spawning avalible animats
     void Update() {
         if (remaingAnimats > 0 && Time.time > nextSpawnTime) {
             
@@ -44,11 +47,13 @@ public class Spawner : MonoBehaviour {
         }
     }
 
+    //Removes animat on death
     void onAnimatDeath() {
         aliveAnimats--;
         currentAnimats.RemoveAll(item => item == null);
     }
 
+    //Generates a new wave of animat
     void FirstWave() {
         aliveAnimats = 0;
         remaingAnimats = maxAnimats;
@@ -61,6 +66,7 @@ public class Spawner : MonoBehaviour {
         }
     }
 
+    //Enables the spawning animats made via reproduction
     void NextWave()
     {
         if (AnimatBaseDna != null) {
@@ -70,12 +76,14 @@ public class Spawner : MonoBehaviour {
         }
     }
 
+    //Recalls all active animats on night fall
     void RecallAnimats() {
         Debug.Log(gameObject.name + " Recalling Animats");
         currentAnimats.RemoveAll(item => item == null);
         foreach (AnimatAI animat in currentAnimats) { animat.Nest(); }
     }
 
+    //Docks a selected animat if the nest is full start reproduction
     public void Dock(AnimatAI AnimatToDock) {
         if (currentAnimats.Contains(AnimatToDock) && NestFull != true) {
             AnimatToDock.gameObject.SetActive(false);
@@ -92,6 +100,7 @@ public class Spawner : MonoBehaviour {
         }
     }
 
+    //Selects animats and combines there genes to make a list of new animat genes
     bool Reproduce() {
         int Entries;
 
@@ -132,6 +141,7 @@ public class Spawner : MonoBehaviour {
 
     }
 
+    //Merges Two genes at random
     string GeneSplice(string GeneStringA, string GeneStringB) {
         int MutationCheck = Random.Range(0, 9999);
         string outputGene = "";
@@ -305,6 +315,7 @@ public class Spawner : MonoBehaviour {
         return outputGene;
     }
 
+    //Reinitlizes all of the surviving animats from the previous generation
     void UnDock() {
         Transform generationHolder = transform;
         foreach (GameObject holder in GameObject.FindGameObjectsWithTag("GenerationHolder")) {
@@ -331,18 +342,22 @@ public class Spawner : MonoBehaviour {
         
     }
 
+    //Output for day report data
     public int[] GetData() {
         return ReportData;
     }
 
+    //Allows animats to add data to the output data when they complete an action
     public void AddData(int DataType) {
         ReportData[DataType]++;
     }
 
+    //Resets outputData for the next day
     public void ResetData() {
         ReportData = new int[] { 0, 0, 0, 0, 0, 0, 0};
     }
 
+    //Wave Object
     [System.Serializable]
     public class Wave {
 

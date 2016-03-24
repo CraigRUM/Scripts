@@ -2,12 +2,19 @@
 using System.Collections.Generic;
 using System.IO;
 
+/// <summary>
+/// Functions not requiering monodevelop contained in this file 
+/// </summary>
+
 public static class Utility{
 
+    //Balencing values
     static int hMax = (int)(14 *256/2), oMax = (int)(14 * 256 / 1.75), pMax = (int)(14 * 256 / 1.5);
 
+    //Seed augmenter
     static int GeneGenerationPass = 1;
 
+    //Array based on input seed
     public static T[] ShuffleArray<T>(T[] array, int seed) {
         System.Random prng = new System.Random(seed);
 
@@ -21,8 +28,9 @@ public static class Utility{
         return array;
     }
 
+    //Generates a random gene based on an input seed 
     public static string[] GenerateGeneString(int seed, int Amount, char spawnerType) {
-        System.Random prng = new System.Random(seed * GeneGenerationPass);
+        System.Random prng = new System.Random(seed + GeneGenerationPass);
         GeneGenerationPass++;
         string[] OutputGene = new string[Amount];
         for (int i = 0; i < Amount; i++)
@@ -80,6 +88,7 @@ public static class Utility{
             return OutputGene;
     }
 
+    //Checks a gene string meets the balencing requierments
     public static bool GeneValidityCheck(string[] GeneToCheck)
     {
         if (GeneToCheck == null || GeneToCheck.Length != 14) { return false; }
@@ -112,6 +121,7 @@ public static class Utility{
         return false;
     }
 
+    //Output data to csv
     public static void DataToCSV(List<int[]> Data, string seed) {
         string filePath = string.Format(@"C:\Users\Craig\Desktop\{0}.csv", (seed + (Data[0].Length - 1).ToString()));
         string fileData = "DayCount,ReasourceGrowth,Starvation,Fertilization,Predation,GrassConsumed,FruitConsumed,WaterConsumed,EssenceConsumed,PreditorStartCount,PreditorEndCountCount,ScavengerStartCount,ScavengerEndCount,HerbivourStartCount,HerbivourEndCount\n";

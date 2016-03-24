@@ -5,42 +5,46 @@ using System.Collections;
 public class SimOperator : MonoBehaviour {
 
     public event System.Action TogglePause;
-
+    //Interface config variables
     public float mouseSensitivityX = 20f;
     public float mouseSensitivityY = 20f;
     public float movementSpeed = 5f;
-    //public Transform crossHairs;
 
+    //Inspection variables
     string selectionData;
     IInspectable currentlySelected;
+    //Object inspector objects
+    public GameObject[] Displayobjects = new GameObject[9];
 
+    //Movment variables
     Vector3 moveAmount;
     Vector3 smoothMoveVelocity;
     bool locked = false;
     Transform targetMob;
 
+    //Camara variables
     Transform viewCamera;
     float veiwheight = 10;
     float verticalLookRotation;
     float horizontalLookRotation;
 
-    public GameObject[] Displayobjects = new GameObject[9];
-
     OperationsControler controller;
 
+    //Camara and Controls Setup
     void Start () {
         controller = GetComponent<OperationsControler>();
         viewCamera = Camera.main.transform;
         Camera.main.orthographicSize = veiwheight;
     }
 
+    //Removes dead animats from inspection gui
     void onfllowingDeath() {
         Displayobjects[0].SetActive(true);
         locked = false;
 
     }
 
-	// Update is called once per frame
+	// Determins the Users movment and actions based on frame by frame input
 	void Update () {
 
         Vector3 moveDir;
@@ -178,6 +182,7 @@ public class SimOperator : MonoBehaviour {
 
     }
 
+    //Updates object inspection gui
     IEnumerator UpdataSelectionData()
     {
         while (currentlySelected !=  null)

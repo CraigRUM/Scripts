@@ -1,6 +1,11 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+/// <summary>
+/// Base class taken from youtube tutorial url:
+/// for ai testing 
+/// </summary>
+
 public class LivingEntity : MonoBehaviour, IDamageable {
 
     protected float startingHealth = 100;

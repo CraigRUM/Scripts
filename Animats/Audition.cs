@@ -18,6 +18,7 @@ public class Audition : MonoBehaviour {
         DetectedTargets = new Queue<Transform>();
     }
 
+    //Initilize hearing quality
     public void SetStats(int Hquality)
     {
         hearingQuality = Hquality;

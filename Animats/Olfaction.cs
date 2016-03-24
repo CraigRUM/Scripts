@@ -12,7 +12,7 @@ public class Olfaction : MonoBehaviour {
     int olfactionAccuracy;
     List<Transform> outputTargets;
 
-
+    //Added ability to be detected
     void Start()
     {
         Transform Sent = Instantiate(SmellColider, transform.position, Quaternion.Euler(Vector3.right)) as Transform;
@@ -20,12 +20,14 @@ public class Olfaction : MonoBehaviour {
         Sent.gameObject.layer = 26;
     }
 
+    //Initilize Attributes
     public void SetStats(int Orange, int accuracy)
     {
         olfactionRange = Orange;
         olfactionAccuracy = accuracy;
     }
 
+    //Returns a list of objects that have been detected in the area 
     public List<Transform> Sniff() {
 
         outputTargets = new List<Transform>();
